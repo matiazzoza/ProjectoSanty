@@ -1,0 +1,147 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.report-card {
+  @include card;
+  display: block;
+  overflow: hidden;
+  transition: box-shadow $transition-base, transform $transition-base;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: $shadow-md;
+    transform: translateY(-2px);
+  }
+
+  &__photo {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    &:hover img { transform: scale(1.03); }
+  }
+
+  &__body {
+    padding: $space-5;
+    @include flex(column, flex-start, flex-start, $space-3);
+  }
+
+  &__meta {
+    @include flex(row, center, space-between);
+    width: 100%;
+  }
+
+  &__category {
+    @include badge(rgba($color-primary, 0.1), $color-primary);
+  }
+
+  &__meta-right {
+    @include flex(row, center, flex-end, $space-2);
+  }
+
+  &__status {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    padding: 2px $space-2;
+    border-radius: $radius-full;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+
+  &__date {
+    font-size: $font-size-xs;
+    color: $color-text-light;
+  }
+
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: 700;
+    color: $color-text;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+
+  &__description {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  &__location {
+    @include flex(row, center, flex-start, $space-1);
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+
+    svg { flex-shrink: 0; }
+  }
+
+  &__footer {
+    @include flex(row, center, space-between);
+    width: 100%;
+    padding-top: $space-3;
+    border-top: 1px solid $color-border-light;
+  }
+
+  &__author {
+    @include flex(row, center, flex-start, $space-2);
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+
+    &-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: $radius-full;
+      background: $color-primary-light;
+      color: $color-primary;
+      font-size: 10px;
+      font-weight: 700;
+      @include flex(row, center, center);
+    }
+  }
+
+  &__actions {
+    @include flex(row, center, flex-end, $space-2);
+  }
+
+  &__vote {
+    @include button-base;
+    padding: $space-2 $space-3;
+    background: $color-bg;
+    color: $color-text-muted;
+    border: 1px solid $color-border;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    gap: $space-1;
+
+    &:hover { border-color: $color-primary; color: $color-primary; }
+
+    &--active {
+      background: $color-primary-light;
+      color: $color-primary;
+      border-color: $color-primary;
+    }
+  }
+
+  &__delete {
+    @include button-base;
+    padding: $space-2;
+    background: transparent;
+    color: $color-text-light;
+    border: 1px solid $color-border;
+    border-radius: $radius-full;
+
+    &:hover { color: $color-danger; border-color: $color-danger; background: rgba($color-danger, 0.05); }
+  }
+}

@@ -1,0 +1,99 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.login {
+  min-height: 100vh;
+  @include flex(row, center, center);
+  background: linear-gradient(135deg, $color-primary-light 0%, $color-bg 60%);
+  padding: $space-6;
+
+  &__card {
+    @include card;
+    width: 100%;
+    max-width: 420px;
+    padding: $space-10;
+    box-shadow: $shadow-lg;
+    @include flex(column, stretch, flex-start, $space-6);
+  }
+
+  &__header {
+    @include flex(column, center, flex-start, $space-2);
+    text-align: center;
+  }
+
+  &__icon { font-size: 2.5rem; }
+
+  &__title {
+    font-size: $font-size-2xl;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: $color-text;
+  }
+
+  &__subtitle {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    line-height: 1.5;
+  }
+
+  &__form {
+    @include flex(column, stretch, flex-start, $space-4);
+  }
+
+  &__field {
+    @include flex(column, stretch, flex-start, $space-1);
+  }
+
+  &__label {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  &__input {
+    @include input-base;
+  }
+
+  &__error {
+    font-size: $font-size-sm;
+    color: $color-danger;
+    background: rgba($color-danger, 0.06);
+    border: 1px solid rgba($color-danger, 0.2);
+    border-radius: $radius-sm;
+    padding: $space-3 $space-4;
+  }
+
+  &__submit {
+    @include button-base;
+    width: 100%;
+    padding: $space-4;
+    background: $color-primary;
+    color: white;
+    font-size: $font-size-base;
+    font-weight: 600;
+    border-radius: $radius-sm;
+    margin-top: $space-2;
+
+    &:hover { background: $color-primary-dark; box-shadow: $shadow-sm; }
+  }
+
+  &__hint {
+    padding: $space-4;
+    background: $color-bg;
+    border-radius: $radius-sm;
+    border: 1px solid $color-border;
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    @include flex(column, stretch, flex-start, $space-2);
+
+    p { font-weight: 600; color: $color-text; }
+  }
+
+  &__users {
+    @include flex(column, stretch, flex-start, $space-1);
+    font-size: $font-size-xs;
+
+    span { color: $color-text-muted; }
+    strong { color: $color-text; }
+  }
+}

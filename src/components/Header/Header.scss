@@ -1,0 +1,117 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: $header-height;
+  background: $color-surface;
+  border-bottom: 1px solid $color-border;
+  box-shadow: $shadow-sm;
+
+  &__inner {
+    @include container;
+    @include flex(row, center, space-between);
+    height: 100%;
+  }
+
+  &__brand {
+    @include flex(row, center, flex-start, $space-2);
+    font-size: $font-size-lg;
+    font-weight: 700;
+    color: $color-text;
+
+    &-icon { font-size: 1.4rem; }
+    &-name { letter-spacing: -0.02em; }
+  }
+
+  &__nav {
+    @include flex(row, center, flex-end, $space-4);
+  }
+
+  &__btn {
+    @include button-base;
+    padding: $space-2 $space-4;
+
+    &--ghost {
+      background: transparent;
+      color: $color-text-muted;
+      font-size: $font-size-sm;
+      border: 1.5px solid $color-border;
+
+      &:hover { border-color: $color-primary; color: $color-primary; background: $color-primary-light; }
+
+      @media (max-width: 560px) { display: none; }
+    }
+
+    &--primary {
+      background: $color-primary;
+      color: white;
+      font-weight: 600;
+      font-size: $font-size-sm;
+
+      &:hover { background: $color-primary-dark; box-shadow: $shadow-sm; }
+    }
+
+    &--admin {
+      @media (max-width: 700px) { display: none; }
+    }
+  }
+
+  &__theme-toggle {
+    @include button-base;
+    padding: $space-2;
+    width: 36px;
+    height: 36px;
+    background: $color-surface-raised;
+    color: $color-text-muted;
+    border: 1.5px solid $color-border;
+    border-radius: $radius-full;
+
+    &:hover { color: $color-primary; border-color: $color-primary; background: $color-primary-light; }
+  }
+
+  &__user {
+    @include flex(row, center, flex-start, $space-3);
+    border-radius: $radius-sm;
+    padding: $space-1 $space-2;
+    transition: background $transition-fast;
+    cursor: pointer;
+
+    &:hover { background: $color-border-light; }
+  }
+
+  &__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: $radius-full;
+    background: $color-primary-light;
+    color: $color-primary;
+    font-size: $font-size-xs;
+    font-weight: 700;
+    @include flex(row, center, center);
+    overflow: hidden;
+    flex-shrink: 0;
+
+    img { width: 100%; height: 100%; object-fit: cover; }
+  }
+
+  &__username {
+    font-size: $font-size-sm;
+    font-weight: 500;
+    color: $color-text;
+
+    @media (max-width: 500px) { display: none; }
+  }
+
+  &__logout {
+    @include button-base;
+    padding: $space-2;
+    background: transparent;
+    color: $color-text-muted;
+    border-radius: $radius-sm;
+
+    &:hover { background: $color-border-light; color: $color-danger; }
+  }
+}

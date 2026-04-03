@@ -1,0 +1,389 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.report-detail {
+  @include container;
+  padding-top: $space-8;
+  padding-bottom: $space-10;
+
+  &--not-found {
+    @include flex(column, center, center, $space-4);
+    min-height: 60vh;
+    color: $color-text-muted;
+    text-align: center;
+
+    button {
+      @include button-base;
+      padding: $space-2 $space-4;
+      background: $color-primary;
+      color: white;
+      &:hover { background: $color-primary-dark; }
+    }
+  }
+
+  &__container {
+    max-width: 680px;
+    @include flex(column, stretch, flex-start, $space-6);
+  }
+
+  &__back {
+    @include button-base;
+    padding: $space-2 0;
+    background: transparent;
+    color: $color-text-muted;
+    font-size: $font-size-sm;
+    width: fit-content;
+
+    &:hover { color: $color-primary; }
+  }
+
+  &__photo {
+    border-radius: $radius-lg;
+    overflow: hidden;
+    max-height: 360px;
+    box-shadow: $shadow-md;
+
+    img { width: 100%; object-fit: cover; max-height: 360px; }
+  }
+
+  &__card {
+    @include card;
+    padding: $space-8;
+    @include flex(column, stretch, flex-start, $space-5);
+  }
+
+  &__meta {
+    @include flex(row, center, space-between);
+    flex-wrap: wrap;
+    gap: $space-2;
+  }
+
+  &__category {
+    @include badge(rgba($color-primary, 0.1), $color-primary);
+    font-size: $font-size-sm;
+    padding: $space-1 $space-3;
+  }
+
+  &__status-badge {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    padding: 3px $space-3;
+    border-radius: $radius-full;
+    border: 1.5px solid;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  &__top-row {
+    @include flex(row, flex-start, space-between, $space-4);
+  }
+
+  &__title {
+    font-size: $font-size-2xl;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: $color-text;
+    line-height: 1.3;
+    flex: 1;
+  }
+
+  &__edit-btn {
+    @include button-base;
+    padding: $space-2 $space-3;
+    background: $color-bg;
+    color: $color-text-muted;
+    border: 1.5px solid $color-border;
+    border-radius: $radius-sm;
+    font-size: $font-size-xs;
+    white-space: nowrap;
+    flex-shrink: 0;
+
+    &:hover { border-color: $color-primary; color: $color-primary; background: $color-primary-light; }
+  }
+
+  &__author {
+    @include flex(row, center, flex-start, $space-3);
+
+    &-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: $radius-full;
+      background: $color-primary-light;
+      color: $color-primary;
+      font-size: $font-size-xs;
+      font-weight: 700;
+      @include flex(row, center, center);
+      flex-shrink: 0;
+    }
+
+    > div { @include flex(column, flex-start, flex-start, 2px); }
+
+    &-name {
+      font-size: $font-size-sm;
+      font-weight: 600;
+      color: $color-text;
+    }
+
+    &-label {
+      font-size: $font-size-xs;
+      color: $color-text-light;
+      text-transform: capitalize;
+    }
+  }
+
+  &__description {
+    font-size: $font-size-base;
+    color: $color-text-muted;
+    line-height: 1.75;
+    padding: $space-4 0;
+    border-top: 1px solid $color-border-light;
+    border-bottom: 1px solid $color-border-light;
+  }
+
+  &__location-block {
+    @include flex(column, stretch, flex-start, $space-3);
+  }
+
+  &__section-title {
+    @include flex(row, center, flex-start, $space-2);
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  &__address {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+  }
+
+  &__footer {
+    @include flex(row, center, space-between);
+    flex-wrap: wrap;
+    gap: $space-3;
+    padding-top: $space-4;
+    border-top: 1px solid $color-border-light;
+  }
+
+  &__share-btn {
+    @include button-base;
+    padding: $space-2 $space-3;
+    background: $color-surface-raised;
+    color: $color-text-muted;
+    border: 1.5px solid $color-border;
+    border-radius: $radius-sm;
+    font-size: $font-size-xs;
+
+    &:hover { border-color: $color-primary; color: $color-primary; background: $color-primary-light; }
+  }
+
+  &__vote-block {
+    @include flex(row, center, flex-start, $space-3);
+  }
+
+  &__vote-btn {
+    @include button-base;
+    padding: $space-3 $space-5;
+    background: $color-bg;
+    color: $color-text-muted;
+    border: 1.5px solid $color-border;
+    border-radius: $radius-full;
+    font-size: $font-size-base;
+    font-weight: 600;
+    gap: $space-2;
+
+    &:hover:not(:disabled) { border-color: $color-primary; color: $color-primary; }
+
+    &--active {
+      background: $color-primary-light;
+      color: $color-primary;
+      border-color: $color-primary;
+    }
+  }
+
+  &__vote-hint {
+    font-size: $font-size-xs;
+    color: $color-text-light;
+  }
+
+  &__manage {
+    @include flex(row, center, flex-end, $space-2);
+    flex-wrap: wrap;
+  }
+
+  &__status-select {
+    @include input-base;
+    width: auto;
+    padding: $space-2 $space-4;
+    cursor: pointer;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    border-width: 1.5px;
+    border-radius: $radius-full;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right $space-3 center;
+    padding-right: $space-6;
+    appearance: none;
+  }
+
+  &__duplicate-btn {
+    @include button-base;
+    padding: $space-2 $space-3;
+    background: rgba($color-warning, 0.06);
+    color: $color-warning;
+    border: 1.5px solid rgba($color-warning, 0.3);
+    border-radius: $radius-sm;
+    font-size: $font-size-xs;
+
+    &:hover { background: rgba($color-warning, 0.14); border-color: $color-warning; }
+  }
+
+  &__delete-btn {
+    @include button-base;
+    padding: $space-2 $space-3;
+    background: rgba($color-danger, 0.06);
+    color: $color-danger;
+    border: 1.5px solid rgba($color-danger, 0.2);
+    border-radius: $radius-sm;
+    font-size: $font-size-xs;
+
+    &:hover { background: rgba($color-danger, 0.12); border-color: $color-danger; }
+  }
+
+  // Comments
+  &__comments {
+    @include card;
+    padding: $space-6;
+    @include flex(column, stretch, flex-start, $space-5);
+  }
+
+  &__comments-title {
+    @include flex(row, center, flex-start, $space-3);
+    font-size: $font-size-lg;
+    font-weight: 700;
+    color: $color-text;
+  }
+
+  &__comments-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 $space-2;
+    background: $color-primary-light;
+    color: $color-primary;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: 700;
+  }
+
+  &__comment-form { width: 100%; }
+
+  &__comment-input-row {
+    @include flex(row, center, flex-start, $space-3);
+  }
+
+  &__comment-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: $radius-full;
+    background: $color-primary-light;
+    color: $color-primary;
+    font-size: $font-size-xs;
+    font-weight: 700;
+    @include flex(row, center, center);
+    flex-shrink: 0;
+  }
+
+  &__comment-input {
+    @include input-base;
+    flex: 1;
+  }
+
+  &__comment-submit {
+    @include button-base;
+    padding: $space-3 $space-4;
+    background: $color-primary;
+    color: white;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    white-space: nowrap;
+
+    &:hover:not(:disabled) { background: $color-primary-dark; }
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
+  }
+
+  &__comment-list {
+    @include flex(column, stretch, flex-start, $space-4);
+  }
+
+  &__no-comments {
+    font-size: $font-size-sm;
+    color: $color-text-light;
+    text-align: center;
+    padding: $space-6 0;
+  }
+}
+
+// Comment item
+.comment {
+  @include flex(row, flex-start, flex-start, $space-3);
+  padding-bottom: $space-4;
+  border-bottom: 1px solid $color-border-light;
+
+  &:last-child { border-bottom: none; padding-bottom: 0; }
+
+  &__avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: $radius-full;
+    background: $color-border-light;
+    color: $color-text-muted;
+    font-size: $font-size-xs;
+    font-weight: 700;
+    @include flex(row, center, center);
+    flex-shrink: 0;
+  }
+
+  &__body {
+    flex: 1;
+    @include flex(column, flex-start, flex-start, $space-1);
+    min-width: 0;
+  }
+
+  &__header {
+    @include flex(row, center, flex-start, $space-2);
+    flex-wrap: wrap;
+  }
+
+  &__author {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  &__date {
+    font-size: $font-size-xs;
+    color: $color-text-light;
+  }
+
+  &__text {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    line-height: 1.6;
+    word-break: break-word;
+  }
+
+  &__delete {
+    @include button-base;
+    padding: $space-1 $space-2;
+    background: transparent;
+    color: $color-text-light;
+    font-size: $font-size-xs;
+    border-radius: $radius-sm;
+    flex-shrink: 0;
+
+    &:hover { color: $color-danger; background: rgba($color-danger, 0.05); }
+  }
+}

@@ -1,0 +1,79 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.home {
+  @include container;
+  padding-top: $space-8;
+  padding-bottom: $space-10;
+  @include flex(column, stretch, flex-start, $space-6);
+
+  &__hero {
+    @include flex(column, flex-start, flex-start, $space-2);
+  }
+
+  &__title {
+    font-size: $font-size-3xl;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: $color-text;
+  }
+
+  &__subtitle {
+    font-size: $font-size-base;
+    color: $color-text-muted;
+    max-width: 500px;
+  }
+
+  &__controls {
+    @include flex(row, center, flex-start, $space-3);
+    flex-wrap: wrap;
+  }
+
+  &__search {
+    @include input-base;
+    max-width: 320px;
+    flex: 1;
+  }
+
+  &__sort {
+    @include input-base;
+    width: auto;
+    padding: $space-3 $space-4;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right $space-3 center;
+    padding-right: $space-8;
+    appearance: none;
+  }
+
+  &__filters {
+    overflow-x: auto;
+    padding-bottom: $space-1;
+
+    &::-webkit-scrollbar { height: 4px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: $color-border; border-radius: $radius-full; }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: $space-5;
+  }
+
+  &__count {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+  }
+
+  &__empty {
+    @include flex(column, center, center, $space-3);
+    padding: $space-10;
+    color: $color-text-muted;
+    text-align: center;
+
+    span { font-size: 3rem; }
+    p { font-size: $font-size-base; }
+  }
+}

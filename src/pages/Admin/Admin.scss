@@ -1,0 +1,192 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.admin {
+  @include container;
+  padding-top: $space-8;
+  padding-bottom: $space-10;
+
+  &--forbidden {
+    min-height: 60vh;
+    @include flex(column, center, center, $space-4);
+    text-align: center;
+
+    span { font-size: 3rem; }
+    h2 { font-size: $font-size-2xl; font-weight: 700; color: $color-text; }
+    p  { font-size: $font-size-base; color: $color-text-muted; }
+
+    button {
+      @include button-base;
+      padding: $space-3 $space-5;
+      background: $color-primary;
+      color: white;
+      font-weight: 600;
+      &:hover { background: #1d4ed8; }
+    }
+  }
+
+  &__container {
+    @include flex(column, stretch, flex-start, $space-6);
+  }
+
+  &__header {
+    @include flex(row, flex-start, space-between, $space-4);
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    font-size: $font-size-3xl;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: $color-text;
+  }
+
+  &__subtitle {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+  }
+
+  // Stats
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: $space-4;
+  }
+
+  &__stat {
+    @include card;
+    padding: $space-4 $space-5;
+    @include flex(column, flex-start, flex-start, $space-1);
+
+    &-value {
+      font-size: $font-size-2xl;
+      font-weight: 700;
+      color: $color-text;
+      letter-spacing: -0.02em;
+    }
+
+    &-label {
+      font-size: $font-size-xs;
+      color: $color-text-muted;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 600;
+    }
+  }
+
+  // Filtros
+  &__filters {
+    @include flex(row, center, flex-start, $space-3);
+    flex-wrap: wrap;
+  }
+
+  &__search {
+    @include input-base;
+    max-width: 280px;
+    flex: 1;
+  }
+
+  &__select {
+    @include input-base;
+    width: auto;
+    flex: 1;
+    max-width: 200px;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right $space-3 center;
+    padding-right: $space-8;
+  }
+
+  // Tabla
+  &__table-wrap {
+    @include card;
+    overflow-x: auto;
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: $font-size-sm;
+
+    th {
+      text-align: left;
+      padding: $space-3 $space-4;
+      font-size: $font-size-xs;
+      font-weight: 700;
+      color: $color-text-muted;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid $color-border;
+      background: $color-surface-raised;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: $space-3 $space-4;
+      border-bottom: 1px solid $color-border-light;
+      color: $color-text-muted;
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr:hover td { background: $color-surface-raised; }
+  }
+
+  &__empty-row {
+    text-align: center;
+    padding: $space-8 !important;
+    color: $color-text-light;
+  }
+
+  &__report-link {
+    font-weight: 600;
+    color: $color-text;
+    cursor: pointer;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-width: 260px;
+
+    &:hover { color: $color-primary; }
+  }
+
+  &__category {
+    white-space: nowrap;
+    font-size: $font-size-xs;
+  }
+
+  &__author { white-space: nowrap; }
+  &__votes  { white-space: nowrap; font-weight: 600; color: $color-text; }
+  &__date   { white-space: nowrap; font-size: $font-size-xs; }
+
+  &__status-select {
+    @include input-base;
+    width: auto;
+    padding: $space-1 $space-3;
+    padding-right: $space-5;
+    font-size: $font-size-xs;
+    font-weight: 700;
+    cursor: pointer;
+    border-width: 1.5px;
+    border-radius: $radius-full;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+  }
+
+  &__delete-btn {
+    @include button-base;
+    padding: $space-2;
+    background: transparent;
+    color: $color-text-light;
+    border: 1px solid $color-border;
+    border-radius: $radius-sm;
+
+    &:hover { color: $color-danger; border-color: $color-danger; background: rgba(239,68,68,0.05); }
+  }
+}

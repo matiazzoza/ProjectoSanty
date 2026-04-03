@@ -1,0 +1,32 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.category-filter {
+  @include flex(row, center, flex-start, $space-2);
+  flex-wrap: wrap;
+
+  &__btn {
+    @include button-base;
+    padding: $space-2 $space-4;
+    background: $color-surface;
+    color: $color-text-muted;
+    border: 1.5px solid $color-border;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: 500;
+    white-space: nowrap;
+
+    &:hover {
+      border-color: $color-primary;
+      color: $color-primary;
+    }
+
+    &--active {
+      background: $color-primary;
+      color: white;
+      border-color: $color-primary;
+
+      &:hover { background: $color-primary-dark; border-color: $color-primary-dark; color: white; }
+    }
+  }
+}

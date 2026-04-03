@@ -1,0 +1,80 @@
+@use 'variables' as *;
+
+@mixin flex($dir: row, $align: center, $justify: flex-start, $gap: 0) {
+  display: flex;
+  flex-direction: $dir;
+  align-items: $align;
+  justify-content: $justify;
+  @if $gap != 0 { gap: $gap; }
+}
+
+@mixin card {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  box-shadow: $shadow-sm;
+}
+
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-2;
+  border: none;
+  border-radius: $radius-sm;
+  font-family: $font-family;
+  font-size: $font-size-sm;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background $transition-fast, box-shadow $transition-fast, transform $transition-fast;
+  padding: $space-2 $space-4;
+
+  &:active { transform: scale(0.97); }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+@mixin input-base {
+  width: 100%;
+  border: 1.5px solid $color-border;
+  border-radius: $radius-sm;
+  font-family: $font-family;
+  font-size: $font-size-sm;
+  color: $color-text;
+  background: $color-surface;
+  padding: $space-3 $space-4;
+  outline: none;
+  transition: border-color $transition-fast, box-shadow $transition-fast;
+  box-sizing: border-box;
+
+  &::placeholder { color: $color-text-light; }
+
+  &:focus {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.1);
+  }
+}
+
+@mixin container {
+  max-width: $container-max;
+  margin: 0 auto;
+  padding: 0 $space-6;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@mixin badge($bg, $color) {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-1;
+  background: $bg;
+  color: $color;
+  padding: 2px $space-2;
+  border-radius: $radius-full;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  white-space: nowrap;
+}

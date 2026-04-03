@@ -1,0 +1,261 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.profile {
+  @include container;
+  padding-top: $space-8;
+  padding-bottom: $space-10;
+
+  &__container {
+    max-width: $container-max;
+    @include flex(column, stretch, flex-start, $space-6);
+  }
+
+  // Profile card
+  &__card {
+    @include card;
+    padding: $space-8;
+    @include flex(column, center, flex-start, $space-5);
+    text-align: center;
+  }
+
+  &__avatar-wrap {
+    position: relative;
+    width: fit-content;
+  }
+
+  &__avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: $radius-full;
+    background: $color-primary-light;
+    border: 3px solid $color-border;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    @include flex(row, center, center);
+    transition: border-color $transition-base;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    &:hover {
+      border-color: $color-primary;
+
+      .profile__avatar-overlay { opacity: 1; }
+    }
+  }
+
+  &__avatar-initials {
+    font-size: $font-size-2xl;
+    font-weight: 700;
+    color: $color-primary;
+  }
+
+  &__avatar-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    @include flex(column, center, center, $space-1);
+    opacity: 0;
+    transition: opacity $transition-base;
+    color: white;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    border-radius: $radius-full;
+  }
+
+  &__remove-photo {
+    @include button-base;
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border-radius: $radius-full;
+    background: $color-danger;
+    color: white;
+    font-size: 10px;
+    border: 2px solid white;
+    line-height: 1;
+
+    &:hover { background: #dc2626; }
+  }
+
+  &__info {
+    @include flex(column, center, flex-start, $space-1);
+    width: 100%;
+  }
+
+  &__name-row {
+    @include flex(row, center, center, $space-2);
+  }
+
+  &__name {
+    font-size: $font-size-2xl;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: $color-text;
+  }
+
+  &__edit-name {
+    @include button-base;
+    padding: $space-1;
+    background: transparent;
+    color: $color-text-light;
+    border-radius: $radius-sm;
+
+    &:hover { color: $color-primary; background: $color-primary-light; }
+  }
+
+  &__saved-hint {
+    font-size: $font-size-xs;
+    color: $color-success;
+    font-weight: 600;
+  }
+
+  &__name-edit {
+    @include flex(column, center, flex-start, $space-2);
+    width: 100%;
+    max-width: 300px;
+  }
+
+  &__name-input {
+    @include input-base;
+    text-align: center;
+    font-size: $font-size-lg;
+    font-weight: 600;
+  }
+
+  &__name-actions {
+    @include flex(row, center, center, $space-2);
+  }
+
+  &__name-btn {
+    @include button-base;
+    padding: $space-2 $space-4;
+    font-size: $font-size-sm;
+    font-weight: 600;
+
+    &--save {
+      background: $color-primary;
+      color: white;
+      &:hover { background: $color-primary-dark; }
+    }
+
+    &--cancel {
+      background: $color-bg;
+      color: $color-text-muted;
+      border: 1.5px solid $color-border;
+      &:hover { border-color: $color-text-muted; color: $color-text; }
+    }
+  }
+
+  &__username {
+    font-size: $font-size-sm;
+    color: $color-text-light;
+  }
+
+  // Stats
+  &__stats {
+    @include flex(row, center, center, 0);
+    border-top: 1px solid $color-border-light;
+    padding-top: $space-5;
+    width: 100%;
+    gap: 0;
+  }
+
+  &__stat {
+    @include flex(column, center, flex-start, $space-1);
+    flex: 1;
+    text-align: center;
+
+    &-value {
+      font-size: $font-size-2xl;
+      font-weight: 700;
+      color: $color-text;
+      letter-spacing: -0.02em;
+    }
+
+    &-label {
+      font-size: $font-size-xs;
+      color: $color-text-muted;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+  }
+
+  &__stat-divider {
+    width: 1px;
+    height: 40px;
+    background: $color-border-light;
+    flex-shrink: 0;
+  }
+
+  // Tabs
+  &__tabs {
+    @include flex(row, center, flex-start, $space-2);
+    border-bottom: 2px solid $color-border-light;
+  }
+
+  &__tab {
+    @include button-base;
+    padding: $space-3 $space-5;
+    background: transparent;
+    color: $color-text-muted;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    border-radius: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    gap: $space-2;
+
+    &:hover { color: $color-text; }
+
+    &--active {
+      color: $color-primary;
+      border-bottom-color: $color-primary;
+    }
+  }
+
+  &__tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 $space-1;
+    background: $color-border-light;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: 700;
+    color: $color-text-muted;
+
+    .profile__tab--active & {
+      background: $color-primary-light;
+      color: $color-primary;
+    }
+  }
+
+  // Grid
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: $space-5;
+  }
+
+  &__empty {
+    @include flex(column, center, center, $space-3);
+    padding: $space-10;
+    color: $color-text-muted;
+    text-align: center;
+
+    span { font-size: 3rem; }
+    p { font-size: $font-size-base; }
+  }
+}

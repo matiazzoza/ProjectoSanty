@@ -1,0 +1,48 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.pagination {
+  @include flex(row, center, center, $space-3);
+  flex-wrap: wrap;
+  padding-top: $space-4;
+
+  &__btn {
+    @include button-base;
+    padding: $space-2 $space-4;
+    background: $color-surface;
+    color: $color-text-muted;
+    border: 1.5px solid $color-border;
+    border-radius: $radius-sm;
+    font-size: $font-size-sm;
+
+    &:hover:not(:disabled) { border-color: $color-primary; color: $color-primary; }
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
+  }
+
+  &__pages {
+    @include flex(row, center, center, $space-1);
+  }
+
+  &__page {
+    @include button-base;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: $color-surface;
+    color: $color-text-muted;
+    border: 1.5px solid $color-border;
+    border-radius: $radius-sm;
+    font-size: $font-size-sm;
+    font-weight: 600;
+
+    &:hover { border-color: $color-primary; color: $color-primary; }
+
+    &--active {
+      background: $color-primary;
+      color: white;
+      border-color: $color-primary;
+
+      &:hover { background: #1d4ed8; color: white; }
+    }
+  }
+}

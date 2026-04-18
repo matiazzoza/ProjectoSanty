@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { useReports } from "../../context/ReportsContext";
+import { useAuth } from "../../controllers/AuthController";
+import { useReports } from "../../controllers/ReportsController";
 import { CATEGORIES } from "../../data/mockReports";
+import { getAll as getBarrios } from "../../models/barrioModel";
 import MapPicker from "../../components/MapPicker/MapPicker";
 import "./EditReport.scss";
 
@@ -24,7 +25,13 @@ export default function EditReport() {
   const [location, setLocation] = useState(report.location ?? null);
   const [address, setAddress] = useState(report.location?.address ?? "");
   const [photo, setPhoto] = useState(report.photo ?? null);
+  const [barrio, setBarrio] = useState(report.barrio?.id ?? null);
+  const [barrios, setBarrios] = useState([]);
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    getBarrios().then(setBarrios).catch(() => {});
+  }, []);
 
   function handlePhoto(e) {
     const file = e.target.files[0];
@@ -53,6 +60,7 @@ export default function EditReport() {
       category,
       location: location ? { ...location, address: address.trim() || "Ubicación en el mapa" } : null,
       photo,
+      barrioId: barrio,
     });
 
     navigate(`/reporte/${id}`);
@@ -108,6 +116,20 @@ export default function EditReport() {
             />
             <span className="edit-report__counter">{description.length}/600</span>
             {errors.description && <span className="edit-report__error">{errors.description}</span>}
+          </div>
+
+          <div className="edit-report__field">
+            <label className="edit-report__label">Barrio (opcional)</label>
+            <select
+              className="edit-report__input edit-report__select"
+              value={barrio ?? ""}
+              onChange={(e) => setBarrio(e.target.value ? Number(e.target.value) : null)}
+            >
+              <option value="">Sin barrio específico</option>
+              {barrios.map((b) => (
+                <option key={b.id} value={b.id}>{b.nombre}</option>
+              ))}
+            </select>
           </div>
 
           <div className="edit-report__field">

@@ -11,7 +11,112 @@
   }
 
   &__header {
-    @include flex(column, flex-start, flex-start, $space-2);
+    @include flex(row, flex-start, space-between);
+    flex-wrap: wrap;
+    gap: $space-4;
+  }
+
+  // Requieren atención
+  &__atencion {
+    @include flex(column, stretch, flex-start, $space-4);
+  }
+
+  &__atencion-title {
+    font-size: $font-size-lg;
+    font-weight: 700;
+    color: $color-text;
+  }
+
+  &__atencion-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $space-4;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__periodo {
+    @include flex(row, center, flex-end, $space-2);
+    flex-wrap: wrap;
+  }
+
+  &__periodo-label {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text-muted;
+  }
+
+  &__periodo-input {
+    @include input-base;
+    width: auto;
+    padding: $space-2 $space-3;
+    font-size: $font-size-sm;
+    cursor: pointer;
+  }
+
+  &__periodo-sep {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+  }
+
+  &__periodo-clear {
+    @include button-base;
+    padding: $space-2 $space-3;
+    background: rgba($color-danger, 0.06);
+    color: $color-danger;
+    border: 1px solid rgba($color-danger, 0.2);
+    border-radius: $radius-sm;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    &:hover { background: rgba($color-danger, 0.12); }
+  }
+
+  &__periodo-hint {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    white-space: nowrap;
+  }
+
+  &__header-row {
+    @include flex(row, center, space-between);
+    flex-wrap: wrap;
+    gap: $space-4;
+  }
+
+  &__obras-btn {
+    @include button-base;
+    @include flex(row, center, flex-start, $space-2);
+    padding: $space-3 $space-5;
+    background: $color-surface;
+    color: $color-text-muted;
+    border: 1.5px solid $color-border;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    transition: all $transition-base;
+
+    &:hover {
+      border-color: #22c55e;
+      color: #22c55e;
+      background: rgba(#22c55e, 0.05);
+    }
+
+    &--active {
+      border-color: #22c55e;
+      color: #22c55e;
+      background: rgba(#22c55e, 0.08);
+    }
+  }
+
+  &__obras-count {
+    background: rgba(#22c55e, 0.15);
+    color: #16a34a;
+    font-size: $font-size-xs;
+    font-weight: 700;
+    padding: 2px $space-2;
+    border-radius: $radius-full;
   }
 
   &__title {
@@ -70,6 +175,32 @@
     text-align: center;
   }
 
+  &__map-header {
+    @include flex(row, center, space-between);
+    margin-bottom: $space-3;
+    flex-wrap: wrap;
+    gap: $space-3;
+  }
+
+  &__map-expand-btn {
+    @include button-base;
+    @include flex(row, center, flex-start, $space-2);
+    padding: $space-2 $space-4;
+    background: $color-surface-raised;
+    border: 1.5px solid $color-border;
+    border-radius: $radius-md;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-text-muted;
+    transition: all $transition-fast;
+
+    &:hover {
+      border-color: $color-primary;
+      color: $color-primary;
+      background: $color-primary-light;
+    }
+  }
+
   &__map {
     height: 340px;
     border-radius: $radius-md;
@@ -87,9 +218,94 @@
   &__category-list {
     @include flex(column, stretch, flex-start, $space-3);
   }
+
+  // Barrio ranking
+  &__barrio-list {
+    @include flex(column, stretch, flex-start, $space-2);
+    max-height: 420px;
+    overflow-y: auto;
+    padding-right: $space-1;
+
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: $color-border; border-radius: $radius-full; }
+  }
 }
 
 // Stat Card
+// Paneles de atención
+.atencion-panel {
+  @include card;
+  padding: $space-4;
+  @include flex(column, stretch, flex-start, $space-3);
+
+  &--urgente { border-top: 3px solid #dc2626; }
+  &--riesgo  { border-top: 3px solid #d97706; }
+  &--abandonado { border-top: 3px solid #7c3aed; }
+
+  &__header {
+    @include flex(row, center, flex-start, $space-2);
+  }
+
+  &__icon { font-size: 1rem; }
+
+  &__label {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    color: $color-text;
+    flex: 1;
+  }
+
+  &__count {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    background: $color-surface-raised;
+    color: $color-text-muted;
+    padding: 2px $space-2;
+    border-radius: $radius-full;
+  }
+
+  &__empty {
+    font-size: $font-size-xs;
+    color: $color-text-light;
+    text-align: center;
+    padding: $space-3 0;
+  }
+
+  &__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    @include flex(column, stretch, flex-start, $space-2);
+  }
+
+  &__item {
+    border-bottom: 1px solid $color-border-light;
+    padding-bottom: $space-2;
+    &:last-child { border-bottom: none; padding-bottom: 0; }
+  }
+
+  &__link {
+    @include flex(column, flex-start, flex-start, $space-1);
+    text-decoration: none;
+    &:hover .atencion-panel__item-title { color: $color-primary; }
+  }
+
+  &__item-title {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text;
+    line-height: 1.3;
+  }
+
+  &__item-meta {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+
+    &--danger { color: #7c3aed; font-weight: 600; }
+  }
+}
+
 .stat-card {
   @include card;
   padding: $space-5;
@@ -128,6 +344,67 @@
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 160px;
+  }
+}
+
+// Obras realizadas
+.dashboard__resolved-list {
+  @include flex(column, stretch, flex-start, $space-3);
+}
+
+.resolved-card {
+  @include flex(row, center, flex-start, $space-4);
+  padding: $space-4;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  text-decoration: none;
+  background: $color-bg;
+  transition: box-shadow $transition-base, border-color $transition-base;
+
+  &:hover {
+    box-shadow: $shadow-sm;
+    border-color: #22c55e;
+  }
+
+  &__icon {
+    font-size: 1.6rem;
+    flex-shrink: 0;
+  }
+
+  &__info {
+    @include flex(column, flex-start, flex-start, 2px);
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__meta {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__address {
+    font-size: $font-size-xs;
+    color: $color-text-light;
+  }
+
+  &__badge {
+    flex-shrink: 0;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: #22c55e;
+    background: rgba(#22c55e, 0.1);
+    border: 1px solid rgba(#22c55e, 0.3);
+    border-radius: $radius-full;
+    padding: 2px $space-3;
   }
 }
 
@@ -176,5 +453,208 @@
   &__votes {
     font-size: $font-size-xs;
     color: $color-text-muted;
+  }
+}
+
+// Barrio row
+.barrio-row {
+  @include flex(row, center, flex-start, $space-3);
+  padding: $space-3 $space-4;
+  border-radius: $radius-md;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  transition: box-shadow $transition-fast;
+
+  &:hover { box-shadow: $shadow-sm; }
+
+  &__rank {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    color: $color-text-muted;
+    width: 24px;
+    flex-shrink: 0;
+    text-align: center;
+  }
+
+  &__info {
+    flex: 1;
+    @include flex(column, stretch, flex-start, $space-2);
+    min-width: 0;
+  }
+
+  &__header {
+    @include flex(row, center, space-between);
+    flex-wrap: wrap;
+    gap: $space-2;
+  }
+
+  &__nombre {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    color: $color-text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__badges {
+    @include flex(row, center, flex-end, $space-2);
+    flex-wrap: wrap;
+  }
+
+  &__badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px $space-2;
+    border-radius: $radius-full;
+    white-space: nowrap;
+
+    &--resuelto {
+      background: rgba(#22c55e, 0.1);
+      color: #16a34a;
+    }
+
+    &--proceso {
+      background: rgba(#3b82f6, 0.1);
+      color: #2563eb;
+    }
+
+    &--votos {
+      background: $color-surface-raised;
+      color: $color-text-muted;
+    }
+  }
+
+  &__bar-wrap {
+    width: 100%;
+    height: 6px;
+    background: $color-border-light;
+    border-radius: $radius-full;
+    overflow: hidden;
+  }
+
+  &__bar {
+    height: 100%;
+    background: linear-gradient(90deg, #2563eb, #60a5fa);
+    border-radius: $radius-full;
+    transition: width 0.5s ease;
+    min-width: 4px;
+  }
+
+  &__count {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    color: $color-text;
+    flex-shrink: 0;
+    width: 50px;
+    text-align: right;
+  }
+}
+
+// Modal mapa ampliado
+.mapa-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(3px);
+
+  &__box {
+    background: $color-surface;
+    border-radius: $radius-lg;
+    width: 95vw;
+    max-width: 1100px;
+    height: 88vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: $shadow-lg;
+    overflow: hidden;
+  }
+
+  &__header {
+    @include flex(row, center, space-between);
+    padding: $space-4 $space-6;
+    border-bottom: 1px solid $color-border;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: $space-3;
+  }
+
+  &__header-left {
+    @include flex(column, flex-start, flex-start, 2px);
+  }
+
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: 700;
+    color: $color-text;
+    margin: 0;
+  }
+
+  &__count {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__controls {
+    @include flex(row, center, flex-end, $space-3);
+    flex-wrap: wrap;
+  }
+
+  &__select {
+    @include input-base;
+    padding: $space-2 $space-8 $space-2 $space-3;
+    font-size: $font-size-xs;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right $space-3 center;
+    appearance: none;
+  }
+
+  &__close {
+    @include button-base;
+    width: 34px;
+    height: 34px;
+    border-radius: $radius-sm;
+    background: $color-surface-raised;
+    color: $color-text-muted;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+
+    &:hover { background: #fee2e2; color: $color-danger; }
+  }
+
+  &__map {
+    flex: 1;
+    min-height: 0;
+  }
+
+  &__legend {
+    @include flex(row, center, center);
+    flex-wrap: wrap;
+    gap: $space-3 $space-5;
+    padding: $space-3 $space-6;
+    border-top: 1px solid $color-border;
+    flex-shrink: 0;
+  }
+
+  &__legend-item {
+    @include flex(row, center, flex-start, $space-2);
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
   }
 }

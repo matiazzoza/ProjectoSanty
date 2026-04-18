@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -20,10 +20,21 @@ function ClickHandler({ onSelect }) {
   return null;
 }
 
+// Mueve el mapa cuando las coordenadas cambian externamente (geocoding)
+function FlyTo({ value }) {
+  const map = useMap();
+  useEffect(() => {
+    if (value?.lat && value?.lng) {
+      map.flyTo([value.lat, value.lng], 16, { duration: 1 });
+    }
+  }, [value?.lat, value?.lng]);
+  return null;
+}
+
 export default function MapPicker({ value, onChange, readOnly = false, height = "250px" }) {
   const defaultCenter = value
     ? [value.lat, value.lng]
-    : [-34.6037, -58.3816];
+    : [-26.1775, -58.1781];
 
   return (
     <div style={{ height, borderRadius: "8px", overflow: "hidden", border: "1.5px solid #e2e8f0" }}>
@@ -38,6 +49,7 @@ export default function MapPicker({ value, onChange, readOnly = false, height = 
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {!readOnly && <ClickHandler onSelect={onChange} />}
+        {!readOnly && <FlyTo value={value} />}
         {value && <Marker position={[value.lat, value.lng]} />}
       </MapContainer>
     </div>

@@ -1,11 +1,12 @@
-import { useState, useRef } from "react";
-import { useAuth } from "../../context/AuthContext";
-import { useReports } from "../../context/ReportsContext";
-import { useToast } from "../../context/ToastContext";
+import { useState, useRef, useEffect } from "react";
+import { useAuth } from "../../controllers/AuthController";
+import { useReports } from "../../controllers/ReportsController";
+import { useToast } from "../../controllers/ToastController";
+import { getByUsuario as getSeguidos } from "../../models/seguimientoModel";
 import ReportCard from "../../components/ReportCard/ReportCard";
 import "./Profile.scss";
 
-const TABS = ["Mis reportes", "Reportes apoyados"];
+const TABS = ["Mis reportes", "Reportes apoyados", "Mis seguimientos"];
 
 export default function Profile() {
   const { currentUser, updateProfile } = useAuth();
@@ -17,9 +18,17 @@ export default function Profile() {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(currentUser.name);
   const [nameSaved, setNameSaved] = useState(false);
+  const [seguidosIds, setSeguidosIds] = useState([]);
+
+  useEffect(() => {
+    getSeguidos(currentUser.id)
+      .then(setSeguidosIds)
+      .catch(() => {});
+  }, [currentUser.id]);
 
   const myReports = reports.filter((r) => r.authorId === currentUser.id);
   const votedReports = reports.filter((r) => r.votes.includes(currentUser.id));
+  const followedReports = reports.filter((r) => seguidosIds.includes(r.id));
   const totalVotesReceived = myReports.reduce((acc, r) => acc + r.votes.length, 0);
 
   function handlePhotoClick() {
@@ -57,7 +66,14 @@ export default function Profile() {
     if (e.key === "Escape") { setEditingName(false); setNameInput(currentUser.name); }
   }
 
-  const tabReports = activeTab === 0 ? myReports : votedReports;
+  const tabReports = activeTab === 0 ? myReports : activeTab === 1 ? votedReports : followedReports;
+  const tabCounts = [myReports.length, votedReports.length, followedReports.length];
+  const emptyIcons = ["📭", "👍", "🔔"];
+  const emptyTexts = [
+    "Todavía no publicaste ningún reporte.",
+    "Todavía no apoyaste ningún reporte.",
+    "Todavía no seguís ningún reporte.",
+  ];
 
   return (
     <div className="profile">
@@ -150,6 +166,11 @@ export default function Profile() {
               <span className="profile__stat-value">{votedReports.length}</span>
               <span className="profile__stat-label">Apoyados</span>
             </div>
+            <div className="profile__stat-divider" />
+            <div className="profile__stat">
+              <span className="profile__stat-value">{followedReports.length}</span>
+              <span className="profile__stat-label">Seguimientos</span>
+            </div>
           </div>
         </div>
 
@@ -162,9 +183,7 @@ export default function Profile() {
               onClick={() => setActiveTab(i)}
             >
               {tab}
-              <span className="profile__tab-count">
-                {i === 0 ? myReports.length : votedReports.length}
-              </span>
+              <span className="profile__tab-count">{tabCounts[i]}</span>
             </button>
           ))}
         </div>
@@ -172,8 +191,8 @@ export default function Profile() {
         {/* Lista de reportes */}
         {tabReports.length === 0 ? (
           <div className="profile__empty">
-            <span>{activeTab === 0 ? "📭" : "👍"}</span>
-            <p>{activeTab === 0 ? "Todavía no publicaste ningún reporte." : "Todavía no apoyaste ningún reporte."}</p>
+            <span>{emptyIcons[activeTab]}</span>
+            <p>{emptyTexts[activeTab]}</p>
           </div>
         ) : (
           <div className="profile__grid">

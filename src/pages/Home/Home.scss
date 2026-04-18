@@ -11,6 +11,94 @@
     @include flex(column, flex-start, flex-start, $space-2);
   }
 
+  &__hero-row {
+    @include flex(row, center, space-between);
+    flex-wrap: wrap;
+    gap: $space-4;
+    width: 100%;
+  }
+
+  &__hero-btns {
+    @include flex(row, center, flex-end, $space-3);
+    flex-wrap: wrap;
+  }
+
+  &__obras-btn {
+    @include button-base;
+    @include flex(row, center, flex-start, $space-2);
+    padding: $space-3 $space-5;
+    background: $color-surface;
+    color: $color-text-muted;
+    border: 1.5px solid $color-border;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    transition: all $transition-base;
+
+    &:hover {
+      border-color: #22c55e;
+      color: #22c55e;
+      background: rgba(#22c55e, 0.05);
+    }
+
+    &--active {
+      border-color: #22c55e;
+      color: #22c55e;
+      background: rgba(#22c55e, 0.08);
+    }
+
+    &--proceso {
+      &:hover {
+        border-color: #3b82f6;
+        color: #3b82f6;
+        background: rgba(#3b82f6, 0.05);
+      }
+    }
+
+    &--proceso-active {
+      border-color: #3b82f6;
+      color: #3b82f6;
+      background: rgba(#3b82f6, 0.08);
+    }
+  }
+
+  &__obras-count {
+    background: rgba(#22c55e, 0.15);
+    color: #16a34a;
+    font-size: $font-size-xs;
+    font-weight: 700;
+    padding: 2px $space-2;
+    border-radius: $radius-full;
+
+    &--proceso {
+      background: rgba(#3b82f6, 0.15);
+      color: #2563eb;
+    }
+  }
+
+  &__obras {
+    @include card;
+    padding: $space-6;
+    @include flex(column, stretch, flex-start, $space-4);
+  }
+
+  &__obras-title {
+    font-size: $font-size-base;
+    font-weight: 700;
+    color: $color-text;
+  }
+
+  &__obras-empty {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    text-align: center;
+    padding: $space-6 0;
+  }
+
+  &__obras-list {
+    @include flex(column, stretch, flex-start, $space-3);
+  }
+
   &__title {
     font-size: $font-size-3xl;
     font-weight: 700;
@@ -31,29 +119,54 @@
 
   &__search {
     @include input-base;
-    max-width: 320px;
+    max-width: 280px;
     flex: 1;
   }
 
-  &__sort {
+  &__select {
     @include input-base;
     width: auto;
-    padding: $space-3 $space-4;
+    padding: $space-3 $space-8 $space-3 $space-4;
     cursor: pointer;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right $space-3 center;
-    padding-right: $space-8;
     appearance: none;
+  }
+
+  &__filters-row {
+    @include flex(row, center, space-between, $space-3);
+    flex-wrap: wrap;
+    gap: $space-2;
   }
 
   &__filters {
     overflow-x: auto;
     padding-bottom: $space-1;
+    flex: 1;
 
     &::-webkit-scrollbar { height: 4px; }
     &::-webkit-scrollbar-track { background: transparent; }
     &::-webkit-scrollbar-thumb { background: $color-border; border-radius: $radius-full; }
+  }
+
+  &__clear-btn {
+    @include button-base;
+    padding: $space-2 $space-4;
+    background: none;
+    border: 1.5px solid $color-border;
+    border-radius: $radius-md;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-text-muted;
+    white-space: nowrap;
+    transition: all $transition-fast;
+
+    &:hover {
+      border-color: $color-danger;
+      color: $color-danger;
+      background: rgba(239, 68, 68, 0.05);
+    }
   }
 
   &__grid {
@@ -75,5 +188,58 @@
 
     span { font-size: 3rem; }
     p { font-size: $font-size-base; }
+  }
+}
+
+.obra-card {
+  @include flex(row, center, flex-start, $space-4);
+  padding: $space-4;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  text-decoration: none;
+  background: $color-bg;
+  transition: box-shadow $transition-base, border-color $transition-base;
+
+  &:hover {
+    box-shadow: $shadow-sm;
+    border-color: #22c55e;
+  }
+
+  &__icon { font-size: 1.6rem; flex-shrink: 0; }
+
+  &__info {
+    @include flex(column, flex-start, flex-start, 2px);
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__meta {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__address {
+    font-size: $font-size-xs;
+    color: $color-text-light;
+  }
+
+  &__badge {
+    flex-shrink: 0;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: #22c55e;
+    background: rgba(#22c55e, 0.1);
+    border: 1px solid rgba(#22c55e, 0.3);
+    border-radius: $radius-full;
+    padding: 2px $space-3;
   }
 }

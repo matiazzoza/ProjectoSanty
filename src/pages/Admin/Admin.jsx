@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { useReports } from "../../context/ReportsContext";
-import { useToast } from "../../context/ToastContext";
+import { useAuth } from "../../controllers/AuthController";
+import { useReports } from "../../controllers/ReportsController";
+import { useToast } from "../../controllers/ToastController";
 import { CATEGORIES, STATUSES } from "../../data/mockReports";
 import "./Admin.scss";
 

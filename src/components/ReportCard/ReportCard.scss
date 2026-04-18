@@ -60,6 +60,32 @@
     color: $color-text-light;
   }
 
+  &__prioridad {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    padding: 2px $space-2;
+    border-radius: $radius-full;
+    border: 1px solid;
+    width: fit-content;
+  }
+
+  &__sin-respuesta {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    padding: 2px $space-2;
+    border-radius: $radius-full;
+    border: 1px solid #c4b5fd;
+    background: #f5f3ff;
+    color: #7c3aed;
+    width: fit-content;
+
+    [data-theme="dark"] & {
+      background: #2e1065;
+      border-color: #7c3aed;
+      color: #c4b5fd;
+    }
+  }
+
   &__title {
     font-size: $font-size-lg;
     font-weight: 700;
@@ -131,6 +157,12 @@
       background: $color-primary-light;
       color: $color-primary;
       border-color: $color-primary;
+    }
+
+    &--disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      &:hover { border-color: $color-border; color: $color-text-muted; }
     }
   }
 

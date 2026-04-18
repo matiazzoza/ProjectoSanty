@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { useReports } from "../../context/ReportsContext";
-import { useToast } from "../../context/ToastContext";
+import { useAuth } from "../../controllers/AuthController";
+import { useReports } from "../../controllers/ReportsController";
+import { useToast } from "../../controllers/ToastController";
 import { CATEGORIES } from "../../data/mockReports";
+import { getAll as getBarrios } from "../../models/barrioModel";
 import MapPicker from "../../components/MapPicker/MapPicker";
 import "./CreateReport.scss";
 
@@ -19,7 +20,62 @@ export default function CreateReport() {
   const [location, setLocation] = useState(null);
   const [address, setAddress] = useState("");
   const [photo, setPhoto] = useState(null);
+  const [barrio, setBarrio] = useState(null);
+  const [barrios, setBarrios] = useState([]);
   const [errors, setErrors] = useState({});
+  const [geocodingStatus, setGeocodingStatus] = useState(null); // 'searching' | 'found' | 'not_found'
+
+  useEffect(() => {
+    getBarrios().then(setBarrios).catch(() => {});
+  }, []);
+
+  // Debounce geocoding: 800ms después de que el usuario deja de escribir
+  useEffect(() => {
+    if (!address.trim() || address.trim().length < 5) {
+      setGeocodingStatus(null);
+      return;
+    }
+    setGeocodingStatus("searching");
+    const timer = setTimeout(async () => {
+      try {
+        const query = encodeURIComponent(`${address.trim()}, Formosa, Argentina`);
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`,
+          { headers: { "Accept-Language": "es" } }
+        );
+        const data = await res.json();
+        if (data.length > 0) {
+          const { lat, lon } = data[0];
+          setLocation({ lat: parseFloat(lat), lng: parseFloat(lon) });
+          setErrors((p) => ({ ...p, location: "" }));
+          setGeocodingStatus("found");
+        } else {
+          setGeocodingStatus("not_found");
+        }
+      } catch {
+        setGeocodingStatus(null);
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [address]);
+
+  async function handleMapClick(coords) {
+    setLocation(coords);
+    setErrors((p) => ({ ...p, location: "" }));
+    setGeocodingStatus(null);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${coords.lat}&lon=${coords.lng}&format=json`,
+        { headers: { "Accept-Language": "es" } }
+      );
+      const data = await res.json();
+      if (data?.display_name) {
+        setAddress(data.display_name);
+      }
+    } catch {
+      // si falla, no pasa nada, las coordenadas ya están marcadas
+    }
+  }
 
   function handlePhoto(e) {
     const file = e.target.files[0];
@@ -29,11 +85,14 @@ export default function CreateReport() {
     reader.readAsDataURL(file);
   }
 
+  const canSubmit = title.trim() && description.trim() && category && location;
+
   function validate() {
     const errs = {};
     if (!title.trim()) errs.title = "El título es obligatorio.";
     if (!description.trim()) errs.description = "La descripción es obligatoria.";
     if (!category) errs.category = "Seleccioná una categoría.";
+    if (!location) errs.location = "Marcá la ubicación en el mapa.";
     return errs;
   }
 
@@ -49,6 +108,7 @@ export default function CreateReport() {
       category,
       location: location ? { ...location, address: address.trim() || "Ubicación en el mapa" } : null,
       photo,
+      barrioId: barrio,
       authorId: currentUser.id,
       authorName: currentUser.name,
       createdAt: new Date().toISOString(),
@@ -115,26 +175,62 @@ export default function CreateReport() {
           </div>
 
           <div className="create-report__field">
+            <label className="create-report__label">Barrio (opcional)</label>
+            <select
+              className="create-report__input create-report__select"
+              value={barrio ?? ""}
+              onChange={(e) => setBarrio(e.target.value ? Number(e.target.value) : null)}
+            >
+              <option value="">Sin barrio específico</option>
+              {barrios.map((b) => (
+                <option key={b.id} value={b.id}>{b.nombre}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="create-report__field">
             <label className="create-report__label">Dirección (opcional)</label>
             <input
               className="create-report__input"
               type="text"
-              placeholder="Ej: Calle Falsa 123, Buenos Aires"
+              placeholder="Ej: Av. 25 de Mayo 450, Formosa"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
             />
+            {geocodingStatus === "searching" && (
+              <span className="create-report__geocoding create-report__geocoding--searching">
+                🔍 Buscando ubicación...
+              </span>
+            )}
+            {geocodingStatus === "found" && (
+              <span className="create-report__geocoding create-report__geocoding--found">
+                ✅ Ubicación encontrada y marcada en el mapa
+              </span>
+            )}
+            {geocodingStatus === "not_found" && (
+              <span className="create-report__geocoding create-report__geocoding--not-found">
+                ⚠️ No se encontró la dirección. Marcá la ubicación manualmente en el mapa.
+              </span>
+            )}
           </div>
 
           <div className="create-report__field">
             <label className="create-report__label">
-              Ubicación en el mapa
+              Ubicación en el mapa <span>*</span>
               <span className="create-report__label-hint"> — hacé clic para marcar</span>
             </label>
-            <MapPicker value={location} onChange={setLocation} height="260px" />
-            {location && (
-              <span className="create-report__coords">
-                📍 {location.lat.toFixed(5)}, {location.lng.toFixed(5)}
-              </span>
+            <MapPicker value={location} onChange={handleMapClick} height="260px" />
+            {location ? (
+              <div className="create-report__coords-block">
+                <span className="create-report__coords">
+                  📍 {location.lat.toFixed(5)}, {location.lng.toFixed(5)}
+                </span>
+                {address && (
+                  <span className="create-report__coords-address">{address}</span>
+                )}
+              </div>
+            ) : (
+              errors.location && <span className="create-report__error">{errors.location}</span>
             )}
           </div>
 
@@ -160,7 +256,7 @@ export default function CreateReport() {
             <button type="button" className="create-report__btn create-report__btn--secondary" onClick={() => navigate(-1)}>
               Cancelar
             </button>
-            <button type="submit" className="create-report__btn create-report__btn--primary">
+            <button type="submit" className="create-report__btn create-report__btn--primary" disabled={!canSubmit}>
               Publicar reporte
             </button>
           </div>

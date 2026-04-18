@@ -105,6 +105,123 @@
     @media (max-width: 500px) { display: none; }
   }
 
+  &__notif {
+    position: relative;
+
+    &-btn {
+      @include button-base;
+      position: relative;
+      padding: $space-2;
+      width: 36px;
+      height: 36px;
+      background: $color-surface-raised;
+      color: $color-text-muted;
+      border: 1.5px solid $color-border;
+      border-radius: $radius-full;
+
+      &:hover { color: $color-primary; border-color: $color-primary; background: $color-primary-light; }
+    }
+
+    &-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: $color-danger;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
+      border-radius: $radius-full;
+      @include flex(row, center, center);
+      line-height: 1;
+    }
+
+    &-panel {
+      position: absolute;
+      top: calc(100% + $space-2);
+      right: 0;
+      width: 320px;
+      background: $color-surface;
+      border: 1px solid $color-border;
+      border-radius: $radius-md;
+      box-shadow: $shadow-lg;
+      z-index: 200;
+      overflow: hidden;
+    }
+
+    &-header {
+      @include flex(row, center, space-between);
+      padding: $space-3 $space-4;
+      border-bottom: 1px solid $color-border;
+      font-size: $font-size-sm;
+      font-weight: 600;
+      color: $color-text;
+    }
+
+    &-read-all {
+      @include button-base;
+      background: transparent;
+      font-size: $font-size-xs;
+      color: $color-primary;
+      padding: 0;
+      &:hover { text-decoration: underline; }
+    }
+
+    &-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    &-item {
+      padding: $space-3 $space-4;
+      border-bottom: 1px solid $color-border-light;
+      cursor: pointer;
+      transition: background $transition-fast;
+
+      &:hover { background: $color-bg; }
+
+      &--unread {
+        background: rgba($color-primary, 0.04);
+        border-left: 3px solid $color-primary;
+      }
+    }
+
+    &-msg {
+      font-size: $font-size-xs;
+      color: $color-text;
+      line-height: 1.5;
+      margin: 0 0 2px;
+    }
+
+    &-date {
+      font-size: 11px;
+      color: $color-text-light;
+    }
+
+    &-empty {
+      padding: $space-5;
+      text-align: center;
+      font-size: $font-size-sm;
+      color: $color-text-muted;
+    }
+  }
+
+  &__notif-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 2px;
+  }
+
+  &__notif-more {
+    font-size: 11px;
+    color: $color-primary;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
   &__logout {
     @include button-base;
     padding: $space-2;
@@ -113,5 +230,102 @@
     border-radius: $radius-sm;
 
     &:hover { background: $color-border-light; color: $color-danger; }
+  }
+}
+
+// ─── Modal de detalle de notificación ────────────────────────────────────────
+.notif-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(3px);
+
+  &__box {
+    background: $color-surface;
+    border-radius: 16px;
+    width: 480px;
+    max-width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid $color-border;
+  }
+
+  &__title {
+    font-size: $font-size-base;
+    font-weight: 700;
+    color: $color-text;
+    margin: 0;
+  }
+
+  &__close {
+    @include button-base;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: $color-surface-raised;
+    color: $color-text-muted;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover { background: #fee2e2; color: $color-danger; }
+  }
+
+  &__body {
+    padding: 20px 24px;
+  }
+
+  &__mensaje {
+    font-size: $font-size-sm;
+    color: $color-text;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    margin: 0;
+  }
+
+  &__map {
+    margin-top: 16px;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    border-top: 1px solid $color-border;
+  }
+
+  &__date {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    text-transform: capitalize;
+  }
+
+  &__btn {
+    @include button-base;
+    padding: 8px 18px;
+    background: $color-primary;
+    color: white;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    border-radius: 8px;
+
+    &:hover { background: $color-primary-dark; }
   }
 }

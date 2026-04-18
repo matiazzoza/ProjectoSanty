@@ -54,6 +54,27 @@
     @include input-base;
   }
 
+  &__input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    .login__input { padding-right: 2.5rem; width: 100%; }
+  }
+
+  &__eye {
+    position: absolute;
+    right: $space-3;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $color-text-muted;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    &:hover { color: $color-text; }
+  }
+
   &__error {
     font-size: $font-size-sm;
     color: $color-danger;
@@ -75,6 +96,19 @@
     margin-top: $space-2;
 
     &:hover { background: $color-primary-dark; box-shadow: $shadow-sm; }
+  }
+
+  &__register {
+    text-align: center;
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+
+    a {
+      color: $color-primary;
+      font-weight: 600;
+      text-decoration: none;
+      &:hover { text-decoration: underline; }
+    }
   }
 
   &__hint {

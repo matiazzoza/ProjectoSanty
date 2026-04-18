@@ -81,6 +81,26 @@
     min-height: 100px;
   }
 
+  &__coords-block {
+    @include flex(column, flex-start, flex-start, $space-1);
+    margin-top: $space-2;
+  }
+
+  &__coords-address {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    line-height: 1.4;
+  }
+
+  &__geocoding {
+    font-size: $font-size-xs;
+    font-weight: 500;
+    margin-top: $space-1;
+    &--searching { color: $color-text-muted; }
+    &--found     { color: #16a34a; }
+    &--not-found { color: #d97706; }
+  }
+
   &__counter {
     font-size: $font-size-xs;
     color: $color-text-light;
@@ -156,7 +176,8 @@
     &--primary {
       background: $color-primary;
       color: white;
-      &:hover { background: $color-primary-dark; box-shadow: $shadow-sm; }
+      &:hover:not(:disabled) { background: $color-primary-dark; box-shadow: $shadow-sm; }
+      &:disabled { background: $color-border; color: $color-text-light; cursor: not-allowed; }
     }
 
     &--secondary {

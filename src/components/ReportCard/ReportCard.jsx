@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { useReports } from "../../context/ReportsContext";
+import { useAuth } from "../../controllers/AuthController";
+import { useReports } from "../../controllers/ReportsController";
 import { CATEGORIES, STATUSES } from "../../data/mockReports";
+import { getPrioridad } from "../../utils/prioridad";
 import "./ReportCard.scss";
 
 function formatDate(iso) {
@@ -17,11 +18,17 @@ export default function ReportCard({ report }) {
   const category = CATEGORIES.find((c) => c.id === report.category);
   const statusInfo = STATUSES.find((s) => s.id === report.status);
   const hasVoted = currentUser ? report.votes.includes(currentUser.id) : false;
+  const prioridad = getPrioridad(report.votes);
+  const diasSinRespuesta = report.status === "pendiente"
+    ? Math.floor((new Date() - new Date(report.createdAt)) / (1000 * 60 * 60 * 24))
+    : 0;
+  const sinRespuesta = diasSinRespuesta >= 15;
   const isOwner = currentUser?.id === report.authorId;
+  const canVote = currentUser && report.status === "pendiente";
 
   function handleVote(e) {
     e.preventDefault();
-    if (!currentUser) return;
+    if (!canVote) return;
     toggleVote(report.id, currentUser.id);
   }
 
@@ -31,7 +38,7 @@ export default function ReportCard({ report }) {
   }
 
   return (
-    <Link to={`/reporte/${report.id}`} className="report-card">
+    <Link to={`/reporte/${report.id}`} className="report-card" style={prioridad.border ? { borderLeft: `4px solid ${prioridad.color}` } : {}}>
       {report.photo && (
         <div className="report-card__photo">
           <img src={report.photo} alt={report.title} />
@@ -57,6 +64,17 @@ export default function ReportCard({ report }) {
             <span className="report-card__date">{formatDate(report.createdAt)}</span>
           </div>
         </div>
+
+        {prioridad.label && (
+          <span className="report-card__prioridad" style={{ color: prioridad.color, background: prioridad.bg, borderColor: prioridad.border }}>
+            🔥 Prioridad {prioridad.label}
+          </span>
+        )}
+        {sinRespuesta && (
+          <span className="report-card__sin-respuesta">
+            {diasSinRespuesta >= 30 ? "🚨" : "⏳"} Sin respuesta · {diasSinRespuesta} días
+          </span>
+        )}
 
         <h3 className="report-card__title">{report.title}</h3>
         <p className="report-card__description">{report.description}</p>
@@ -91,9 +109,10 @@ export default function ReportCard({ report }) {
               </button>
             )}
             <button
-              className={`report-card__vote ${hasVoted ? "report-card__vote--active" : ""}`}
+              className={`report-card__vote ${hasVoted ? "report-card__vote--active" : ""} ${!canVote ? "report-card__vote--disabled" : ""}`}
               onClick={handleVote}
-              title={hasVoted ? "Quitar voto" : "Apoyar reporte"}
+              title={!canVote ? "Solo se vota en reportes pendientes" : hasVoted ? "Quitar voto" : "Apoyar reporte"}
+              disabled={!canVote}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill={hasVoted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
                 <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>

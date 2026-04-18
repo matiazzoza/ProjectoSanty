@@ -70,7 +70,7 @@ export default function Login() {
           {error && <p className="login__error">{error}</p>}
 
           <button className="login__submit" type="submit">
-            Ingresar
+            Entrar
           </button>
         </form>
 

@@ -1,0 +1,319 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.perfil-emp {
+  @include container;
+  padding-top: $space-8;
+  padding-bottom: $space-10;
+
+  &__loading {
+    text-align: center;
+    padding: $space-10;
+    color: $color-text-muted;
+  }
+
+  &__container {
+    max-width: 780px;
+    margin: 0 auto;
+    @include flex(column, stretch, flex-start, $space-6);
+  }
+
+  // Card principal
+  &__card {
+    @include card;
+    padding: $space-8;
+    @include flex(column, center, flex-start, $space-5);
+    text-align: center;
+  }
+
+  &__avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: $radius-full;
+    background: $color-primary;
+    @include flex(row, center, center);
+    overflow: hidden;
+
+    img { width: 100%; height: 100%; object-fit: cover; }
+  }
+
+  &__avatar-initials {
+    font-size: $font-size-2xl;
+    font-weight: 800;
+    color: white;
+    line-height: 1;
+  }
+
+  &__info {
+    @include flex(column, center, flex-start, $space-1);
+  }
+
+  &__name {
+    font-size: $font-size-2xl;
+    font-weight: 800;
+    color: $color-text;
+    letter-spacing: -0.02em;
+  }
+
+  &__username {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+  }
+
+  &__rol {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-primary;
+    background: rgba($color-primary, 0.08);
+    padding: 2px $space-3;
+    border-radius: $radius-full;
+  }
+
+  // Stats
+  &__stats {
+    @include flex(row, center, center, 0);
+    flex-wrap: wrap;
+    width: 100%;
+    border-top: 1px solid $color-border;
+    padding-top: $space-5;
+    gap: 0;
+  }
+
+  &__stat {
+    @include flex(column, center, center, $space-1);
+    flex: 1;
+    min-width: 80px;
+    padding: $space-2 $space-3;
+    text-align: center;
+  }
+
+  &__stat-value {
+    font-size: $font-size-xl;
+    font-weight: 800;
+    color: $color-text;
+    line-height: 1;
+  }
+
+  &__stat-label {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    white-space: nowrap;
+  }
+
+  &__stat-divider {
+    width: 1px;
+    height: 36px;
+    background: $color-border;
+  }
+
+  // Historial
+  &__section {
+    @include flex(column, stretch, flex-start, $space-3);
+  }
+
+  &__section-title {
+    font-size: $font-size-lg;
+    font-weight: 700;
+    color: $color-text;
+  }
+
+  &__empty {
+    text-align: center;
+    padding: $space-10;
+    color: $color-text-muted;
+    font-size: $font-size-sm;
+  }
+
+  &__list {
+    @include flex(column, stretch, flex-start, $space-2);
+  }
+
+  &__item {
+    @include card;
+    @include flex(column, stretch, flex-start, 0);
+    overflow: hidden;
+  }
+
+  &__item-header {
+    @include flex(row, center, space-between, $space-4);
+    padding: $space-4;
+    cursor: pointer;
+    transition: background $transition-fast;
+    flex-wrap: wrap;
+    &:hover { background: $color-surface-raised; }
+  }
+
+  &__item-left {
+    @include flex(column, flex-start, flex-start, $space-1);
+    flex: 1;
+  }
+
+  &__item-cat {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-primary;
+  }
+
+  &__item-title {
+    font-size: $font-size-base;
+    font-weight: 700;
+    color: $color-text;
+  }
+
+  &__item-barrio {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__item-hint {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    font-style: italic;
+  }
+
+  &__item-right {
+    @include flex(column, flex-end, center, $space-1);
+    text-align: right;
+  }
+
+  &__item-dias {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    color: $color-primary;
+  }
+
+  &__item-fecha {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__item-ver {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-primary;
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+
+  &__item-chevron {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  // Detalle expandible
+  &__item-detalle {
+    border-top: 1px solid $color-border;
+    padding: $space-4;
+    @include flex(column, stretch, flex-start, $space-5);
+    background: $color-bg;
+  }
+
+  &__detalle-seccion {
+    @include flex(column, stretch, flex-start, $space-3);
+  }
+
+  &__detalle-titulo {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    color: $color-text;
+    margin-bottom: $space-1;
+  }
+
+  &__detalle-avance {
+    @include flex(column, stretch, flex-start, $space-1);
+    padding: $space-3;
+    background: $color-surface;
+    border-radius: $radius-md;
+    border-left: 3px solid $color-primary;
+  }
+
+  &__detalle-avance-top {
+    @include flex(row, flex-start, space-between, $space-3);
+  }
+
+  &__detalle-pct {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    color: $color-primary;
+    white-space: nowrap;
+  }
+
+  &__detalle-barra-wrap {
+    width: 100%;
+    height: 4px;
+    background: $color-border;
+    border-radius: $radius-full;
+    overflow: hidden;
+  }
+
+  &__detalle-barra {
+    height: 100%;
+    background: $color-primary;
+    border-radius: $radius-full;
+  }
+
+  &__detalle-desc {
+    font-size: $font-size-sm;
+    color: $color-text;
+    flex: 1;
+  }
+
+  &__detalle-fecha {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    margin-top: $space-1;
+  }
+
+  &__detalle-novedad {
+    padding: $space-3;
+    border-radius: $radius-md;
+    border-left: 3px solid;
+    @include flex(column, stretch, flex-start, $space-2);
+
+    &--bloqueante  { border-color: #dc2626; background: #fef2f2; [data-theme="dark"] & { background: #1f0a0a; } }
+    &--informativa { border-color: #d97706; background: #fffbeb; [data-theme="dark"] & { background: #1c1400; } }
+  }
+
+  &__detalle-novedad-header {
+    @include flex(row, center, space-between, $space-2);
+  }
+
+  &__detalle-novedad-tipo {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    color: $color-text;
+  }
+
+  &__detalle-respuesta {
+    @include flex(column, flex-start, flex-start, $space-1);
+    background: #f0fdf4;
+    border-radius: $radius-sm;
+    padding: $space-2;
+    [data-theme="dark"] & { background: #0a1f0f; }
+  }
+
+  &__detalle-respuesta-label {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    color: #16a34a;
+  }
+
+  &__detalle-sin-respuesta {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    font-style: italic;
+  }
+
+  // Back
+  &__back {
+    padding-top: $space-2;
+  }
+
+  &__back-link {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    text-decoration: none;
+    font-weight: 600;
+    &:hover { color: $color-primary; }
+  }
+}

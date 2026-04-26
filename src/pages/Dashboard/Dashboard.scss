@@ -658,3 +658,96 @@
     flex-shrink: 0;
   }
 }
+
+// Estadísticas de empleados
+.dashboard {
+  &__empleados {
+    @include flex(column, stretch, flex-start, $space-4);
+  }
+
+  &__empleados-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: $space-4;
+  }
+}
+
+.emp-stat-card {
+  @include card;
+  padding: $space-5;
+  @include flex(column, stretch, flex-start, $space-4);
+
+  &--clickable {
+    cursor: pointer;
+    transition: box-shadow $transition-base, border-color $transition-base;
+    &:hover {
+      box-shadow: $shadow-md;
+      border-color: $color-primary;
+    }
+  }
+
+  &__header {
+    @include flex(row, center, flex-start, $space-3);
+  }
+
+  &__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: $radius-full;
+    background: rgba($color-primary, 0.1);
+    color: $color-primary;
+    font-weight: 700;
+    font-size: $font-size-sm;
+    @include flex(row, center, center);
+    flex-shrink: 0;
+  }
+
+  &__name {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    color: $color-text;
+  }
+
+  &__username {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $space-3;
+  }
+
+  &__stat {
+    @include flex(column, center, center, $space-1);
+    text-align: center;
+    padding: $space-3;
+    background: $color-bg;
+    border-radius: $radius-md;
+  }
+
+  &__stat-value {
+    font-size: $font-size-xl;
+    font-weight: 800;
+    line-height: 1;
+
+    &--green  { color: #22c55e; }
+    &--blue   { color: #3b82f6; }
+    &--orange { color: #f59e0b; }
+    &--purple { color: #8b5cf6; }
+  }
+
+  &__stat-label {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__promedio {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    text-align: center;
+    padding-top: $space-2;
+    border-top: 1px solid $color-border;
+  }
+}

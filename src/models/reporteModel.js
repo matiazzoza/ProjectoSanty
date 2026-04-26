@@ -14,3 +14,5 @@ export const deleteComment = (reportId, commentId) =>
 
 export const getHistorial = (reportId) =>
   request(`/reports/${reportId}/historial`);
+
+export const getEstadisticasPublicas = () => request('/reports/stats');

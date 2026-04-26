@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useReports } from "../../controllers/ReportsController";
 import { getAll as getBarrios } from "../../models/barrioModel";
+import { getEstadisticasPublicas } from "../../models/reporteModel";
 import ReportCard from "../../components/ReportCard/ReportCard";
 import CategoryFilter from "../../components/CategoryFilter/CategoryFilter";
 import Pagination from "../../components/Pagination/Pagination";
@@ -32,9 +33,11 @@ export default function Home() {
   const [showObras, setShowObras] = useState(false);
   const [showEnProceso, setShowEnProceso] = useState(false);
   const [barrios, setBarrios]     = useState([]);
+  const [stats, setStats]         = useState(null);
 
   useEffect(() => {
     getBarrios().then(setBarrios).catch(() => {});
+    getEstadisticasPublicas().then(setStats).catch(() => {});
   }, []);
 
   const resolvedReports  = useMemo(() => reports.filter((r) => r.status === "resuelto"),   [reports]);
@@ -139,6 +142,7 @@ export default function Home() {
         </div>
       </div>
 
+
       {/* Controles de búsqueda y filtros */}
       <div className="home__controls">
         <input
@@ -193,6 +197,22 @@ export default function Home() {
           </div>
           <Pagination currentPage={page} totalPages={totalPages} onChange={setPage} />
         </>
+      )}
+
+      {stats && (
+        <div className="home__stats-footer">
+          <span>📋 {stats.total} reportes en total</span>
+          <span className="home__stats-sep">·</span>
+          <span>✅ {stats.resueltosEsteMes} resueltos este mes</span>
+          <span className="home__stats-sep">·</span>
+          <span>⏱️ {stats.promedioResolucion !== null ? `${stats.promedioResolucion} días promedio de resolución` : "sin datos de resolución"}</span>
+          {stats.barrioActivo && (
+            <>
+              <span className="home__stats-sep">·</span>
+              <span>🏘️ Barrio más activo: {stats.barrioActivo}</span>
+            </>
+          )}
+        </div>
       )}
     </div>
   );

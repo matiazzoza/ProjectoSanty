@@ -26,7 +26,7 @@ export default function Register() {
       return;
     }
     const ok = await register(form.username, form.password, form.name);
-    if (ok) navigate("/");
+    if (ok) navigate("/tablero-reportes");
   }
 
   return (

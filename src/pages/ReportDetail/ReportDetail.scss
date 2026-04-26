@@ -64,6 +64,34 @@
     padding: $space-1 $space-3;
   }
 
+  &__progreso {
+    @include flex(row, center, flex-start, $space-2);
+    width: 100%;
+    margin-top: $space-2;
+  }
+
+  &__progreso-bar {
+    flex: 1;
+    height: 6px;
+    background: $color-border;
+    border-radius: $radius-full;
+    overflow: hidden;
+  }
+
+  &__progreso-fill {
+    height: 100%;
+    background: $color-primary;
+    border-radius: $radius-full;
+    transition: width 0.4s ease;
+  }
+
+  &__progreso-label {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
   &__status-badge {
     font-size: $font-size-xs;
     font-weight: 700;
@@ -372,52 +400,46 @@
 // Historial item
 .historial-item {
   display: grid;
-  grid-template-columns: 20px 10px 1fr;
+  grid-template-columns: 28px 1fr;
   gap: 0 $space-3;
   padding-bottom: $space-4;
 
   &:last-child { padding-bottom: 0; }
 
-  &__line {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 6px;
+  &__icon-col {
+    @include flex(column, center, flex-start);
+    padding-top: 2px;
+  }
+
+  &__icon {
+    font-size: 1.1rem;
+    line-height: 1;
+    flex-shrink: 0;
   }
 
   &__connector {
     flex: 1;
     width: 2px;
-    background: $color-border-light;
-    margin-top: $space-1;
-  }
-
-  &__dot {
-    width: 10px;
-    height: 10px;
-    border-radius: $radius-full;
-    margin-top: 5px;
-    flex-shrink: 0;
+    background: $color-border;
+    margin-top: $space-2;
+    min-height: 20px;
+    align-self: stretch;
   }
 
   &__content {
-    @include flex(column, flex-start, flex-start, $space-1);
+    @include flex(column, flex-start, flex-start, 2px);
     padding-bottom: $space-2;
   }
 
-  &__estado {
+  &__texto {
     font-size: $font-size-sm;
-    font-weight: 700;
-  }
-
-  &__anterior {
-    font-size: $font-size-xs;
-    color: $color-text-muted;
+    font-weight: 600;
+    color: $color-text;
   }
 
   &__meta {
     font-size: $font-size-xs;
-    color: $color-text-light;
+    color: $color-text-muted;
   }
 }
 
@@ -544,6 +566,102 @@
     max-height: 220px;
   }
 
+  // Diario de avances
+  &__avances {
+    @include card;
+    padding: $space-5;
+    @include flex(column, stretch, flex-start, $space-4);
+  }
+}
+
+.avances-list {
+  @include flex(column, stretch, flex-start);
+  padding-left: $space-2;
+}
+
+.avance-item {
+  position: relative;
+  padding-left: $space-6;
+  padding-bottom: $space-5;
+
+  &:last-child { padding-bottom: 0; }
+
+  &__dot {
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 12px;
+    height: 12px;
+    border-radius: $radius-full;
+    background: $color-primary;
+    border: 2px solid $color-surface;
+    box-shadow: 0 0 0 2px $color-primary;
+    z-index: 1;
+  }
+
+  &__line {
+    position: absolute;
+    left: 5px;
+    top: 16px;
+    bottom: 0;
+    width: 2px;
+    background: $color-border;
+  }
+
+  &__content {
+    @include flex(column, flex-start, flex-start, $space-2);
+  }
+
+  &__header {
+    @include flex(row, center, space-between);
+    width: 100%;
+    flex-wrap: wrap;
+    gap: $space-1;
+  }
+
+  &__empleado {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  &__fecha {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__desc {
+    font-size: $font-size-sm;
+    color: $color-text;
+    line-height: 1.6;
+  }
+
+  &__barra-wrap {
+    @include flex(row, center, flex-start, $space-2);
+    width: 100%;
+    background: $color-bg;
+    border-radius: $radius-full;
+    height: 8px;
+    overflow: visible;
+  }
+
+  &__barra {
+    height: 8px;
+    border-radius: $radius-full;
+    background: $color-primary;
+    transition: width 0.4s ease;
+    min-width: 4px;
+  }
+
+  &__pct {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    color: $color-primary;
+    white-space: nowrap;
+  }
+}
+
+.report-detail {
   // Novedades
   &__novedades {
     @include card;
@@ -703,6 +821,16 @@
     font-size: $font-size-sm;
     background: $color-surface;
     color: $color-text;
+  }
+
+  &__date {
+    padding: $space-2 $space-3;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    background: $color-surface;
+    color: $color-text;
+    font-family: inherit;
   }
 
   &__btn {

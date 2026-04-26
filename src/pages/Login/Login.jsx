@@ -13,9 +13,9 @@ export default function Login() {
   async function handleSubmit(e) {
     e.preventDefault();
     const result = await login(username, password);
-    if (result === 'admin') navigate("/dashboard");
-    else if (result === 'empleado') navigate("/mi-panel");
-    else if (result) navigate("/");
+    if (result === 'admin') navigate("/dashboard-admin");
+    else if (result === 'empleado') navigate("/panel-empleado");
+    else if (result) navigate("/tablero-reportes");
   }
 
   return (

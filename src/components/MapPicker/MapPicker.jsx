@@ -34,7 +34,7 @@ function FlyTo({ value }) {
 export default function MapPicker({ value, onChange, readOnly = false, height = "250px" }) {
   const defaultCenter = value
     ? [value.lat, value.lng]
-    : [-26.1775, -58.1781];
+    : [-26.1847, -58.1741];
 
   return (
     <div style={{ height, borderRadius: "8px", overflow: "hidden", border: "1.5px solid #e2e8f0" }}>

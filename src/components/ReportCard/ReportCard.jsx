@@ -97,7 +97,7 @@ export default function ReportCard({ report }) {
           </div>
 
           <div className="report-card__actions">
-            {isOwner && (
+            {isOwner && report.status === "pendiente" && (
               <button
                 className="report-card__delete"
                 onClick={handleDelete}

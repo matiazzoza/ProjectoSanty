@@ -3,17 +3,17 @@ const { randomUUID } = require('crypto');
 
 async function getByUsuario(usuarioId) {
   const [rows] = await pool.query(
-    `SELECT id, mensaje, leida, creado_en AS creadoEn
+    `SELECT id, mensaje, link, leida, creado_en AS creadoEn
      FROM notificaciones WHERE usuario_id = ? ORDER BY creado_en DESC LIMIT 20`,
     [usuarioId]
   );
   return rows;
 }
 
-async function create(id, usuarioId, mensaje) {
+async function create(id, usuarioId, mensaje, link = null) {
   await pool.query(
-    'INSERT INTO notificaciones (id, usuario_id, mensaje) VALUES (?, ?, ?)',
-    [id, usuarioId, mensaje]
+    'INSERT INTO notificaciones (id, usuario_id, mensaje, link) VALUES (?, ?, ?, ?)',
+    [id, usuarioId, mensaje, link]
   );
 }
 

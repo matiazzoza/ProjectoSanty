@@ -80,6 +80,69 @@
     flex-wrap: wrap;
   }
 
+  &__export-wrap {
+    position: relative;
+    margin-left: auto;
+  }
+
+  &__export-btn {
+    @include button-base;
+    @include flex(row, center, flex-start, $space-2);
+    padding: $space-3 $space-5;
+    background: $color-surface;
+    color: $color-text-muted;
+    border: 1.5px solid $color-border;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all $transition-base;
+
+    &:hover {
+      border-color: $color-primary;
+      color: $color-primary;
+      background: rgba(37, 99, 235, 0.05);
+    }
+  }
+
+  &__export-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+  }
+
+  &__export-menu {
+    position: absolute;
+    top: calc(100% + $space-2);
+    right: 0;
+    z-index: 11;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    box-shadow: $shadow-md;
+    overflow: hidden;
+    min-width: 140px;
+  }
+
+  &__export-option {
+    @include button-base;
+    display: block;
+    width: 100%;
+    padding: $space-3 $space-5;
+    text-align: left;
+    font-size: $font-size-sm;
+    font-weight: 500;
+    color: $color-text;
+    background: none;
+    border: none;
+    border-radius: 0;
+    transition: background $transition-fast;
+
+    &:hover {
+      background: $color-bg;
+    }
+  }
+
   &__search {
     @include input-base;
     max-width: 280px;
@@ -189,4 +252,344 @@
 
     &:hover { color: $color-danger; border-color: $color-danger; background: rgba(239,68,68,0.05); }
   }
+
+  // Tabs
+  &__tabs {
+    @include flex(row, center, flex-start, $space-2);
+    border-bottom: 2px solid $color-border;
+    margin-bottom: $space-6;
+  }
+
+  &__tab {
+    @include button-base;
+    @include flex(row, center, center, $space-2);
+    padding: $space-3 $space-5;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text-muted;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    border-radius: 0;
+    background: transparent;
+
+    &--active {
+      color: $color-primary;
+      border-bottom-color: $color-primary;
+    }
+  }
+
+  &__tab-count {
+    background: $color-primary;
+    color: white;
+    font-size: $font-size-xs;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: $radius-full;
+  }
+
+  // Empleados
+  &__empleados {
+    @include flex(column, stretch, flex-start, $space-5);
+  }
+
+  &__empleados-header {
+    @include flex(row, center, space-between);
+  }
+
+  &__empleados-title {
+    font-size: $font-size-lg;
+    font-weight: 700;
+    color: $color-text;
+  }
+
+  &__empleados-add {
+    @include button-base;
+    padding: $space-2 $space-4;
+    background: $color-primary;
+    color: white;
+    border-radius: $radius-full;
+    font-size: $font-size-sm;
+    font-weight: 600;
+  }
+
+  &__emp-form {
+    @include flex(row, center, flex-start, $space-3);
+    flex-wrap: wrap;
+    padding: $space-4;
+    background: $color-bg;
+    border-radius: $radius-md;
+    border: 1px solid $color-border;
+  }
+
+  &__emp-input {
+    padding: $space-2 $space-3;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    background: $color-surface;
+    color: $color-text;
+    min-width: 160px;
+  }
+
+  &__emp-submit {
+    @include button-base;
+    padding: $space-2 $space-4;
+    background: #22c55e;
+    color: white;
+    border-radius: $radius-full;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    white-space: nowrap;
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  &__emp-list {
+    @include flex(column, stretch, flex-start, $space-3);
+  }
+
+  &__emp-card {
+    @include card;
+    @include flex(row, center, flex-start, $space-4);
+    padding: $space-4;
+
+    &--inactivo { opacity: 0.6; }
+  }
+
+  &__emp-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: $radius-full;
+    background: rgba($color-primary, 0.1);
+    color: $color-primary;
+    font-weight: 700;
+    font-size: $font-size-sm;
+    @include flex(row, center, center);
+    flex-shrink: 0;
+  }
+
+  &__emp-info {
+    @include flex(column, flex-start, flex-start, $space-1);
+    flex: 1;
+  }
+
+  &__emp-name {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  &__emp-username {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__emp-estado {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    padding: 2px $space-2;
+    border-radius: $radius-full;
+
+    &--activo  { background: #f0fdf4; color: #16a34a; }
+    &--inactivo { background: #fef2f2; color: #dc2626; }
+  }
+
+  &__emp-actions {
+    @include flex(row, center, flex-end, $space-2);
+    flex-wrap: wrap;
+  }
+
+  &__emp-btn {
+    @include button-base;
+    padding: $space-2 $space-3;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    white-space: nowrap;
+
+    &--perfil {
+      background: rgba(37, 99, 235, 0.08);
+      color: $color-primary;
+      &:hover { background: $color-primary; color: white; }
+    }
+
+    &--editar {
+      background: rgba(234, 179, 8, 0.1);
+      color: #b45309;
+      &:hover { background: #b45309; color: white; }
+    }
+  }
+
+  &__emp-toggle {
+    @include button-base;
+    padding: $space-2 $space-3;
+    border-radius: $radius-full;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    white-space: nowrap;
+
+    &--desactivar {
+      background: #fef2f2;
+      color: #dc2626;
+      &:hover { background: #dc2626; color: white; }
+    }
+
+    &--activar {
+      background: #f0fdf4;
+      color: #16a34a;
+      &:hover { background: #16a34a; color: white; }
+    }
+  }
+
+  // Modal base
+  &__modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 50;
+    @include flex(row, center, center);
+    padding: $space-4;
+  }
+
+  &__modal {
+    background: $color-surface;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-lg;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: $space-6;
+    @include flex(column, stretch, flex-start, $space-5);
+
+    &--perfil { max-width: 640px; }
+  }
+
+  &__modal-header {
+    @include flex(row, center, space-between);
+
+    h3 {
+      font-size: $font-size-lg;
+      font-weight: 700;
+      color: $color-text;
+    }
+  }
+
+  &__modal-close {
+    @include button-base;
+    width: 32px;
+    height: 32px;
+    border-radius: $radius-full;
+    background: $color-bg;
+    border: 1px solid $color-border;
+    color: $color-text-muted;
+    font-size: $font-size-sm;
+    @include flex(row, center, center);
+    &:hover { background: $color-border; }
+  }
+
+  // Novedades
+  &__novedades {
+    @include flex(column, stretch, flex-start, $space-4);
+  }
+
+  &__novedades-list {
+    @include flex(column, stretch, flex-start, $space-3);
+  }
+
+  &__novedad {
+    @include card;
+    padding: $space-4;
+    border-left: 4px solid;
+    @include flex(column, stretch, flex-start, $space-3);
+
+    &--bloqueante  { border-color: #dc2626; }
+    &--informativa { border-color: #d97706; }
+  }
+
+  &__novedad-header {
+    @include flex(row, center, flex-start, $space-3);
+    flex-wrap: wrap;
+  }
+
+  &__novedad-tipo {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    color: $color-text;
+  }
+
+  &__novedad-empleado {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-text-muted;
+  }
+
+  &__novedad-reporte {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-primary;
+    text-decoration: none;
+    flex: 1;
+    &:hover { text-decoration: underline; }
+  }
+
+  &__novedad-fecha {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    margin-left: auto;
+  }
+
+  &__novedad-desc {
+    font-size: $font-size-sm;
+    color: $color-text;
+  }
+
+  &__novedad-respondida {
+    @include flex(column, flex-start, flex-start, $space-1);
+    background: #f0fdf4;
+    border-radius: $radius-md;
+    padding: $space-3;
+    [data-theme="dark"] & { background: #0a1f0f; }
+  }
+
+  &__novedad-respondida-label {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    color: #16a34a;
+  }
+
+  &__novedad-respondida-texto {
+    font-size: $font-size-sm;
+    color: $color-text;
+  }
+
+  &__novedad-respuesta {
+    @include flex(row, flex-end, flex-start, $space-3);
+    flex-wrap: wrap;
+  }
+
+  &__novedad-textarea {
+    flex: 1;
+    min-width: 200px;
+    padding: $space-2 $space-3;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    background: $color-surface;
+    color: $color-text;
+    resize: vertical;
+    font-family: inherit;
+  }
+
+  &__novedad-btn {
+    @include button-base;
+    padding: $space-2 $space-4;
+    background: $color-primary;
+    color: white;
+    border-radius: $radius-full;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    white-space: nowrap;
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
 }

@@ -16,7 +16,7 @@ export default function EditReport() {
   const report = getReport(id);
 
   // Redirigir si no existe o no es el autor
-  if (!report) { navigate("/"); return null; }
+  if (!report) { navigate("/tablero-reportes"); return null; }
   if (report.authorId !== currentUser?.id) { navigate(`/reporte/${id}`); return null; }
 
   const [title, setTitle] = useState(report.title);

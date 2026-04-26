@@ -32,7 +32,8 @@ async function cargarNovedad(req, res) {
     const tipoLabel = tipo === 'bloqueante' ? 'BLOQUEANTE' : 'informativa';
     await Promise.all(admins.map((a) =>
       Notificacion.create(randomUUID(), a.id,
-        `${emoji} Novedad ${tipoLabel} en el reporte "${rep[0].titulo}": ${descripcion.slice(0, 80)}${descripcion.length > 80 ? '...' : ''}`
+        `${emoji} Novedad ${tipoLabel} en el reporte "${rep[0].titulo}": ${descripcion.slice(0, 80)}${descripcion.length > 80 ? '...' : ''}`,
+        `/reporte/${reporteId}`
       )
     ));
 
@@ -67,7 +68,8 @@ async function responderNovedad(req, res) {
     // Notificar al empleado
     const [rep] = await pool.query('SELECT titulo FROM reportes WHERE id = ?', [novedad.reporte_id]);
     await Notificacion.create(randomUUID(), novedad.empleado_id,
-      `✅ El admin respondió tu novedad en "${rep[0]?.titulo}": ${respuesta.slice(0, 80)}${respuesta.length > 80 ? '...' : ''}`
+      `✅ El admin respondió tu novedad en "${rep[0]?.titulo}": ${respuesta.slice(0, 80)}${respuesta.length > 80 ? '...' : ''}`,
+      `/panel-empleado`
     );
 
     res.json({ ok: true });
@@ -86,4 +88,24 @@ async function getNovedades(req, res) {
   }
 }
 
-module.exports = { cargarNovedad, responderNovedad, getNovedades };
+// Admin: obtener todas las novedades
+async function getAllNovedades(req, res) {
+  try {
+    const [rows] = await pool.query(
+      `SELECT n.id, n.tipo, n.descripcion, n.foto, n.creado_en AS creadoEn,
+              n.respuesta_admin AS respuestaAdmin, n.respondido_en AS respondidoEn,
+              n.reporte_id AS reporteId, r.titulo AS reporteTitulo,
+              n.empleado_id AS empleadoId, u.nombre AS empleadoNombre
+       FROM novedades n
+       JOIN reportes r ON n.reporte_id = r.id
+       JOIN usuarios u ON n.empleado_id = u.id
+       WHERE r.estado != 'resuelto'
+       ORDER BY n.respuesta_admin IS NOT NULL ASC, n.creado_en DESC`
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { cargarNovedad, responderNovedad, getNovedades, getAllNovedades };

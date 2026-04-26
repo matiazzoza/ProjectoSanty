@@ -7,7 +7,7 @@ const barrioRoutes = require('./routes/barrios');
 const seguimientoRoutes = require('./routes/seguimientos');
 const asignacionRoutes = require('./routes/asignaciones');
 const novedadRoutes = require('./routes/novedades');
-const vencimientoJob = require('./jobs/vencimientoJob');
+const avanceRoutes = require('./routes/avances');
 const abandonoJob = require('./jobs/abandonoJob');
 
 const app = express();
@@ -22,9 +22,9 @@ app.use('/api/barrios', barrioRoutes);
 app.use('/api/seguimientos', seguimientoRoutes);
 app.use('/api/asignaciones', asignacionRoutes);
 app.use('/api/novedades', novedadRoutes);
+app.use('/api/avances', avanceRoutes);
 
 // ─── Jobs ─────────────────────────────────────────────────────────────────────
-vencimientoJob.iniciar();
 abandonoJob.iniciar();
 
 // ─── Start ────────────────────────────────────────────────────────────────────

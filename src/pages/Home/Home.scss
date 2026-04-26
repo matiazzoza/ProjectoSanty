@@ -112,6 +112,23 @@
     max-width: 500px;
   }
 
+  &__stats-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: $space-2;
+    padding: $space-5 0 $space-2;
+    border-top: 1px solid $color-border;
+    font-size: $font-size-xs;
+    color: $color-text-light;
+  }
+
+  &__stats-sep {
+    color: $color-border;
+    font-weight: 300;
+  }
+
   &__controls {
     @include flex(row, center, flex-start, $space-3);
     flex-wrap: wrap;

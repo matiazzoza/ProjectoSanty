@@ -117,7 +117,7 @@ export default function CreateReport() {
 
     addReport(report);
     addToast("¡Reporte publicado con éxito!", "success");
-    navigate("/");
+    navigate("/tablero-reportes");
   }
 
   return (

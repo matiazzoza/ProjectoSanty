@@ -8,10 +8,13 @@ async function fetchReports(whereClause = '', params = []) {
             r.foto AS photo, r.foto_campo AS fotoCampo, r.foto_resolucion AS fotoResolucion,
             r.estado_interno AS estadoInterno, r.autor_id AS authorId,
             u.nombre AS authorName, r.creado_en AS createdAt,
-            r.barrio_id AS barrioId, b.nombre AS barrioNombre
+            r.barrio_id AS barrioId, b.nombre AS barrioNombre,
+            emp.id AS empleadoId, emp.nombre AS empleadoNombre
      FROM reportes r
      JOIN usuarios u ON r.autor_id = u.id
      LEFT JOIN barrios b ON r.barrio_id = b.id
+     LEFT JOIN asignaciones a ON a.reporte_id = r.id
+     LEFT JOIN usuarios emp ON emp.id = a.empleado_id
      ${whereClause}
      ORDER BY r.creado_en DESC`,
     params
@@ -41,6 +44,7 @@ async function fetchReports(whereClause = '', params = []) {
     ...r,
     location: { lat: parseFloat(r.lat), lng: parseFloat(r.lng), address: r.address },
     barrio: r.barrioId ? { id: r.barrioId, nombre: r.barrioNombre } : null,
+    empleado: r.empleadoId ? { id: r.empleadoId, nombre: r.empleadoNombre } : null,
     votes: votos.filter((v) => v.reporte_id === r.id).map((v) => v.usuario_id),
     comments: comentarios.filter((c) => c.reporte_id === r.id),
   }));
@@ -102,4 +106,33 @@ async function resetAPendiente(id) {
   );
 }
 
-module.exports = { getAll, getById, create, update, remove, getVencidos, resetAPendiente };
+async function getEstadisticasPublicas() {
+  const [[stats]] = await pool.query(`
+    SELECT
+      COUNT(*)                                                                              AS total,
+      SUM(CASE WHEN estado = 'resuelto'
+               AND MONTH(actualizado_en) = MONTH(NOW())
+               AND YEAR(actualizado_en)  = YEAR(NOW())  THEN 1 ELSE 0 END)                AS resueltosEsteMes,
+      ROUND(AVG(CASE WHEN estado = 'resuelto'
+                     THEN DATEDIFF(actualizado_en, creado_en) END), 1)                    AS promedioResolucion
+    FROM reportes
+  `);
+
+  const [[barrioActivo]] = await pool.query(`
+    SELECT b.nombre, COUNT(*) AS total
+    FROM reportes r
+    JOIN barrios b ON r.barrio_id = b.id
+    GROUP BY r.barrio_id, b.nombre
+    ORDER BY total DESC
+    LIMIT 1
+  `);
+
+  return {
+    total:             Number(stats.total),
+    resueltosEsteMes:  Number(stats.resueltosEsteMes ?? 0),
+    promedioResolucion: stats.promedioResolucion !== null ? Number(stats.promedioResolucion) : null,
+    barrioActivo:      barrioActivo?.nombre ?? null,
+  };
+}
+
+module.exports = { getAll, getById, create, update, remove, getVencidos, resetAPendiente, getEstadisticasPublicas };

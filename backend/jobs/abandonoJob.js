@@ -22,7 +22,6 @@ async function verificarAbandono() {
         randomUUID(), r.autor_id,
         `⏳ Tu reporte "${r.titulo}" lleva 15 días sin respuesta del municipio. Podés compartirlo para conseguir más apoyo.`
       );
-      console.log(`[AbandonoJob] Aviso 15 días: "${r.titulo}"`);
     }
 
     // Crítico a los 30 días
@@ -32,7 +31,6 @@ async function verificarAbandono() {
         randomUUID(), r.autor_id,
         `🚨 Tu reporte "${r.titulo}" lleva 30 días sin respuesta del municipio. Te recomendamos compartirlo o contactar directamente al municipio.`
       );
-      console.log(`[AbandonoJob] Aviso 30 días: "${r.titulo}"`);
     }
   } catch (err) {
     console.error('[AbandonoJob] Error:', err.message);

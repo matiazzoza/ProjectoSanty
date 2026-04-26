@@ -122,7 +122,10 @@ export default function Header() {
 
   async function handleNotifClick(n) {
     if (!n.leida) await handleMarkRead(n.id);
-    if (hasDetalle(n.mensaje)) {
+    if (n.link) {
+      setShowNotif(false);
+      navigate(n.link);
+    } else if (hasDetalle(n.mensaje)) {
       setShowNotif(false);
       setSelectedNotif(n);
     }
@@ -143,7 +146,7 @@ export default function Header() {
     <>
     <header className="header">
       <div className="header__inner">
-        <Link to={isAdmin ? "/dashboard" : "/"} className="header__brand">
+        <Link to={isAdmin ? "/dashboard-admin" : currentUser?.role === "empleado" ? "/panel-empleado" : "/"} className="header__brand">
           <span className="header__brand-icon">🏙️</span>
           <span className="header__brand-name">ReportaMuni</span>
         </Link>
@@ -151,7 +154,7 @@ export default function Header() {
         {currentUser && (
           <nav className="header__nav">
             {isAdmin && (
-              <Link to="/admin" className="header__btn header__btn--ghost header__btn--admin">
+              <Link to="/panel-admin" className="header__btn header__btn--ghost header__btn--admin">
                 ⚙️ Admin
               </Link>
             )}
@@ -159,7 +162,7 @@ export default function Header() {
               <button className="header__btn header__btn--primary header__btn--alerta" onClick={abrirAlerta}>
                 🚨 Nueva alerta
               </button>
-            ) : (
+            ) : currentUser?.role !== "empleado" && (
               <Link to="/crear" className="header__btn header__btn--primary">
                 + Nuevo reporte
               </Link>
@@ -228,8 +231,8 @@ export default function Header() {
                                 day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
                               })}
                             </span>
-                            {hasDetalle(n.mensaje) && (
-                              <span className="header__notif-more">Ver detalle →</span>
+                            {(n.link || hasDetalle(n.mensaje)) && (
+                              <span className="header__notif-more">Ver →</span>
                             )}
                           </div>
                         </div>
@@ -240,7 +243,7 @@ export default function Header() {
               )}
             </div>
 
-            <Link to="/perfil" className="header__user">
+            <Link to={currentUser?.role === "empleado" ? "/perfil-empleado" : "/perfil-vecino"} className="header__user">
               <div className="header__avatar">
                 {currentUser.photo
                   ? <img src={currentUser.photo} alt="perfil" />

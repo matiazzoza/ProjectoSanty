@@ -6,6 +6,8 @@ const comentarioController = require('../controllers/comentarioController');
 const seguimientoController = require('../controllers/seguimientoController');
 const HistorialEstado = require('../models/HistorialEstado');
 
+router.get('/stats', reporteController.getEstadisticasPublicas);
+
 router.use(authMiddleware);
 
 router.get('/',    reporteController.getAll);

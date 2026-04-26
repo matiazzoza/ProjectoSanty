@@ -66,7 +66,7 @@ export default function AdminSidebar() {
         <div className="admin-sidebar__section-title">Herramientas</div>
 
         <nav className="admin-sidebar__menu">
-          <Link to="/" className="admin-sidebar__item" onClick={() => setOpen(false)}>
+          <Link to="/tablero-reportes" className="admin-sidebar__item" onClick={() => setOpen(false)}>
             <span className="admin-sidebar__item-icon">📋</span>
             <div className="admin-sidebar__item-text">
               <span className="admin-sidebar__item-name">Tablero municipal</span>

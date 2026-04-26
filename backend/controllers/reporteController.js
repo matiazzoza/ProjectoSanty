@@ -36,6 +36,14 @@ async function create(req, res) {
 async function update(req, res) {
   const { title, description, category, status, location, photo, barrioId } = req.body;
   try {
+    // Si no es admin y quiere editar datos del reporte (no solo estado), validar que esté pendiente
+    if (!status && req.user.role !== 'admin') {
+      const actual = await Reporte.getById(req.params.id);
+      if (actual && actual.status !== 'pendiente') {
+        return res.status(403).json({ error: 'Solo se puede editar un reporte pendiente.' });
+      }
+    }
+
     // Guardar estado anterior antes de actualizar
     let estadoAnterior = null;
     if (status) {
@@ -54,7 +62,8 @@ async function update(req, res) {
 
       // Notificar al autor
       await Notificacion.create(randomUUID(), reporte.authorId,
-        `📋 Tu reporte "${reporte.title}" cambió su estado a "${etiqueta}"`
+        `📋 Tu reporte "${reporte.title}" cambió su estado a "${etiqueta}"`,
+        `/reporte/${req.params.id}`
       );
 
       // Notificar seguidores (excepto el autor para no duplicar)
@@ -64,7 +73,8 @@ async function update(req, res) {
           .filter((userId) => userId !== reporte.authorId)
           .map((userId) =>
             Notificacion.create(randomUUID(), userId,
-              `📌 El reporte "${reporte.title}" que seguís cambió su estado a "${etiqueta}"`
+              `📌 El reporte "${reporte.title}" que seguís cambió su estado a "${etiqueta}"`,
+              `/reporte/${req.params.id}`
             )
           )
       );
@@ -78,6 +88,14 @@ async function update(req, res) {
 
 async function remove(req, res) {
   try {
+    const reporte = await Reporte.getById(req.params.id);
+    if (!reporte) return res.status(404).json({ error: 'Reporte no encontrado.' });
+
+    // Solo el admin puede eliminar reportes que no están pendientes
+    if (req.user.role !== 'admin' && reporte.status !== 'pendiente') {
+      return res.status(403).json({ error: 'Solo se puede eliminar un reporte pendiente.' });
+    }
+
     await Reporte.remove(req.params.id);
     res.json({ ok: true });
   } catch (err) {
@@ -85,4 +103,13 @@ async function remove(req, res) {
   }
 }
 
-module.exports = { getAll, getOne, create, update, remove };
+async function getEstadisticasPublicas(req, res) {
+  try {
+    const stats = await Reporte.getEstadisticasPublicas();
+    res.json(stats);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { getAll, getOne, create, update, remove, getEstadisticasPublicas };

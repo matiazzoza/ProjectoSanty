@@ -39,9 +39,10 @@
 
   &__stats {
     @include flex(row, center, flex-end, $space-4);
+    flex-wrap: wrap;
   }
 
-  &__stat {
+&__stat {
     @include flex(column, center, center, $space-1);
     text-align: center;
     font-size: $font-size-xs;
@@ -83,6 +84,14 @@
     @include card;
     overflow: hidden;
     @include flex(column, stretch, flex-start);
+    text-decoration: none;
+    color: inherit;
+
+    &--link {
+      cursor: pointer;
+      transition: box-shadow $transition-fast, transform $transition-fast;
+      &:hover { box-shadow: $shadow-md; transform: translateY(-2px); }
+    }
 
     &-photo {
       width: 100%;
@@ -161,14 +170,6 @@
       margin-top: auto;
     }
 
-    &-ver {
-      font-size: $font-size-xs;
-      color: $color-primary;
-      font-weight: 600;
-      text-decoration: none;
-      &:hover { text-decoration: underline; }
-    }
-
     &-btn {
       @include button-base;
       font-size: $font-size-xs;
@@ -187,6 +188,12 @@
         background: #22c55e;
         color: white;
         &:hover { background: #16a34a; }
+      }
+
+      &--avance {
+        background: #8b5cf6;
+        color: white;
+        &:hover { background: #7c3aed; }
       }
 
       &--novedad {
@@ -290,6 +297,24 @@
     font-family: inherit;
   }
 
+  &__modal-pct-row {
+    @include flex(row, center, flex-start, $space-3);
+    width: 100%;
+  }
+
+  &__modal-range {
+    flex: 1;
+    accent-color: $color-primary;
+  }
+
+  &__modal-pct-label {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    color: $color-primary;
+    width: 36px;
+    text-align: right;
+  }
+
   &__modal-tipo-group {
     @include flex(column, stretch, flex-start, $space-2);
     width: 100%;
@@ -339,4 +364,196 @@
 
     &:disabled { opacity: 0.5; cursor: not-allowed; }
   }
+
+  // Tabs
+  &__tabs {
+    @include flex(row, center, flex-start, $space-2);
+    border-bottom: 1px solid $color-border;
+    flex-wrap: wrap;
+  }
+
+  &__tab {
+    @include button-base;
+    @include flex(row, center, flex-start, $space-2);
+    padding: $space-3 $space-4;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text-muted;
+    margin-bottom: -1px;
+    transition: all $transition-fast;
+
+    &--active {
+      color: $color-primary;
+      border-bottom-color: $color-primary;
+    }
+  }
+
+  &__tab-count {
+    background: $color-surface-raised;
+    color: $color-text-muted;
+    font-size: $font-size-xs;
+    font-weight: 700;
+    padding: 1px $space-2;
+    border-radius: $radius-full;
+  }
+
+  // Badge prioridad en tarjeta
+  &__card-badges {
+    @include flex(row, center, flex-end, $space-2);
+    flex-wrap: wrap;
+  }
+
+  &__card-prioridad {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    padding: 2px $space-2;
+    border-radius: $radius-full;
+    border: 1px solid;
+  }
+
+  // Novedades tab
+  &__novedades-list {
+    @include flex(column, stretch, flex-start, $space-3);
+  }
+
+  &__novedad-item {
+    @include card;
+    padding: $space-4;
+    border-left: 4px solid;
+
+    &--bloqueante  { border-color: #dc2626; }
+    &--informativa { border-color: #d97706; }
+  }
+
+  &__novedad-header {
+    @include flex(row, center, space-between, $space-3);
+    flex-wrap: wrap;
+    margin-bottom: $space-2;
+  }
+
+  &__novedad-tipo {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    color: $color-text;
+  }
+
+  &__novedad-reporte {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-primary;
+    flex: 1;
+    text-align: center;
+  }
+
+  &__novedad-fecha {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__novedad-desc {
+    font-size: $font-size-sm;
+    color: $color-text;
+    margin-bottom: $space-3;
+  }
+
+  &__novedad-respuesta {
+    @include flex(column, flex-start, flex-start, $space-1);
+    background: #f0fdf4;
+    border-radius: $radius-md;
+    padding: $space-3;
+
+    [data-theme="dark"] & { background: #0a1f0f; }
+  }
+
+  &__novedad-respuesta-label {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    color: #16a34a;
+  }
+
+  &__novedad-respuesta-texto {
+    font-size: $font-size-sm;
+    color: $color-text;
+  }
+
+  &__novedad-pendiente {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    font-style: italic;
+  }
+
+  // Avances tab
+  &__avances-list {
+    @include flex(column, stretch, flex-start, $space-3);
+  }
+
+  &__avance-item {
+    @include card;
+    padding: $space-4;
+
+    &--link {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      transition: box-shadow $transition-fast, transform $transition-fast;
+      &:hover { box-shadow: $shadow-md; transform: translateY(-1px); }
+    }
+  }
+
+  &__avance-header {
+    @include flex(row, center, space-between, $space-3);
+    margin-bottom: $space-2;
+  }
+
+  &__avance-reporte {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-primary;
+  }
+
+  &__avance-fecha {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__avance-desc {
+    font-size: $font-size-sm;
+    color: $color-text;
+    margin-bottom: $space-3;
+  }
+
+  &__avance-progreso {
+    @include flex(row, center, flex-start, $space-3);
+    width: 100%;
+  }
+
+  &__avance-barra-wrap {
+    flex: 1;
+    background: $color-border;
+    border-radius: $radius-full;
+    height: 6px;
+    overflow: hidden;
+  }
+
+  &__avance-barra {
+    height: 100%;
+    background: $color-primary;
+    border-radius: $radius-full;
+    transition: width 0.3s ease;
+  }
+
+  &__avance-pct {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    color: $color-primary;
+    white-space: nowrap;
+    min-width: 36px;
+    text-align: right;
+  }
+
 }

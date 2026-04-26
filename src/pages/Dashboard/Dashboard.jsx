@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
@@ -7,6 +7,8 @@ import { Link } from "react-router-dom";
 import { useReports } from "../../controllers/ReportsController";
 import { CATEGORIES } from "../../data/mockReports";
 import { getPrioridad } from "../../utils/prioridad";
+import { getEstadisticasEmpleados, getPerfilEmpleado } from "../../models/asignacionModel";
+import EmpleadoPerfilModal from "../../components/EmpleadoPerfilModal/EmpleadoPerfilModal";
 import "leaflet/dist/leaflet.css";
 import "./Dashboard.scss";
 
@@ -42,6 +44,28 @@ export default function Dashboard() {
   const [mapaAbierto, setMapaAbierto]   = useState(false);
   const [mapFiltroCat, setMapFiltrocat] = useState("");
   const [mapFiltroEst, setMapFiltroEst] = useState("");
+
+  // --- Estadísticas empleados ---
+  const [statsEmpleados, setStatsEmpleados] = useState([]);
+  const [perfilEmp, setPerfilEmp]           = useState(null);
+  const [loadingPerfil, setLoadingPerfil]   = useState(false);
+
+  useEffect(() => {
+    getEstadisticasEmpleados().then(setStatsEmpleados).catch(() => {});
+  }, []);
+
+  async function abrirPerfil(id) {
+    setPerfilEmp(null);
+    setLoadingPerfil(true);
+    try {
+      const data = await getPerfilEmpleado(id);
+      setPerfilEmp(data);
+    } catch {
+      // silencioso
+    } finally {
+      setLoadingPerfil(false);
+    }
+  }
 
   // --- Filtro por período ---
   const [fechaDesde, setFechaDesde] = useState("");
@@ -159,7 +183,7 @@ export default function Dashboard() {
 
   const mapCenter = reportsWithLocation.length > 0
     ? [reportsWithLocation[0].location.lat, reportsWithLocation[0].location.lng]
-    : [-26.1775, -58.1781];
+    : [-26.1847, -58.1741];
 
   return (
     <>
@@ -307,6 +331,49 @@ export default function Dashboard() {
           />
         </div>
 
+        {/* Estadísticas de empleados */}
+        {statsEmpleados.length > 0 && (
+          <div className="dashboard__empleados">
+            <h2 className="dashboard__section-title">👷 Rendimiento de empleados</h2>
+            <div className="dashboard__empleados-grid">
+              {statsEmpleados.map((emp) => (
+                <div key={emp.id} className="emp-stat-card emp-stat-card--clickable" onClick={() => abrirPerfil(emp.id)} title="Ver perfil detallado">
+                  <div className="emp-stat-card__header">
+                    <div className="emp-stat-card__avatar">{emp.avatar}</div>
+                    <div>
+                      <p className="emp-stat-card__name">{emp.name}</p>
+                      <p className="emp-stat-card__username">@{emp.username}</p>
+                    </div>
+                  </div>
+                  <div className="emp-stat-card__stats">
+                    <div className="emp-stat-card__stat">
+                      <span className="emp-stat-card__stat-value emp-stat-card__stat-value--green">{emp.resueltos}</span>
+                      <span className="emp-stat-card__stat-label">Resueltos</span>
+                    </div>
+                    <div className="emp-stat-card__stat">
+                      <span className="emp-stat-card__stat-value emp-stat-card__stat-value--blue">{emp.enCurso}</span>
+                      <span className="emp-stat-card__stat-label">En curso</span>
+                    </div>
+                    <div className="emp-stat-card__stat">
+                      <span className="emp-stat-card__stat-value emp-stat-card__stat-value--orange">{emp.novedades}</span>
+                      <span className="emp-stat-card__stat-label">Novedades</span>
+                    </div>
+                    <div className="emp-stat-card__stat">
+                      <span className="emp-stat-card__stat-value emp-stat-card__stat-value--purple">{emp.avances}</span>
+                      <span className="emp-stat-card__stat-label">Avances</span>
+                    </div>
+                  </div>
+                  {emp.tiempoPromedio !== null && (
+                    <p className="emp-stat-card__promedio">
+                      ⏱️ Tiempo promedio de resolución: <strong>{emp.tiempoPromedio} días</strong>
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Grid de secciones */}
         <div className="dashboard__grid">
 
@@ -428,7 +495,7 @@ export default function Dashboard() {
               </button>
             </div>
             <div className="dashboard__map">
-              <MapContainer center={mapCenter} zoom={13} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false}>
+              <MapContainer center={mapCenter} zoom={14} style={{ height: "100%", width: "100%" }} scrollWheelZoom={false}>
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -468,6 +535,12 @@ export default function Dashboard() {
       </div>
     </div>
 
+    <EmpleadoPerfilModal
+      perfil={perfilEmp}
+      loading={loadingPerfil}
+      onClose={() => setPerfilEmp(null)}
+    />
+
     {/* Modal mapa ampliado */}
     {mapaAbierto && (
       <div className="mapa-modal" onClick={(e) => e.target === e.currentTarget && setMapaAbierto(false)}>
@@ -506,7 +579,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="mapa-modal__map">
-            <MapContainer center={mapCenter} zoom={13} style={{ height: "100%", width: "100%" }} scrollWheelZoom>
+            <MapContainer center={mapCenter} zoom={14} style={{ height: "100%", width: "100%" }} scrollWheelZoom>
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

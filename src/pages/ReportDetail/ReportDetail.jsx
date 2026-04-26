@@ -6,9 +6,10 @@ import { useToast } from "../../controllers/ToastController";
 import { CATEGORIES, STATUSES } from "../../data/mockReports";
 import MapPicker from "../../components/MapPicker/MapPicker";
 import { toggle as toggleSeguir, getByUsuario as getSeguidos } from "../../models/seguimientoModel";
-import { getHistorial } from "../../models/reporteModel";
+import { getHistorial, getById as getReporteById } from "../../models/reporteModel";
 import { getEmpleados, asignar, getAsignacionesReporte, validarCierre, rechazarCierre } from "../../models/asignacionModel";
 import { getNovedades, responderNovedad } from "../../models/novedadModel";
+import { getAvances } from "../../models/avanceModel";
 import { getPrioridad } from "../../utils/prioridad";
 import "./ReportDetail.scss";
 
@@ -40,23 +41,37 @@ export default function ReportDetail() {
   const [empleados, setEmpleados] = useState([]);
   const [asignaciones, setAsignaciones] = useState([]);
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState("");
+  const [prioridadSeleccionada, setPrioridadSeleccionada] = useState("media");
+  const [fechaLimite, setFechaLimite] = useState("");
   const [loadingAsignar, setLoadingAsignar] = useState(false);
   const [motivoRechazo, setMotivoRechazo] = useState("");
+
+  // Estado fresco desde la API (para validaciones de permisos)
+  const [freshStatus, setFreshStatus] = useState(null);
 
   // Novedades
   const [novedades, setNovedades] = useState([]);
   const [respuestas, setRespuestas] = useState({});
 
+  // Avances
+  const [avances, setAvances] = useState([]);
+
   const report = getReport(id);
 
   useEffect(() => {
     if (!currentUser || !report) return;
+
+    // Obtener estado fresco del reporte desde la API
+    getReporteById(report.id).then((r) => setFreshStatus(r.status)).catch(() => {});
+
     getSeguidos(currentUser.id)
       .then((ids) => setSiguiendo(ids.includes(report.id)))
       .catch(() => {});
     getHistorial(report.id)
       .then(setHistorial)
       .catch(() => {});
+
+    getAvances(report.id).then(setAvances).catch(() => {});
 
     if (currentUser?.role === "admin") {
       getEmpleados().then(setEmpleados).catch(() => {});
@@ -69,7 +84,7 @@ export default function ReportDetail() {
     return (
       <div className="report-detail report-detail--not-found">
         <p>Reporte no encontrado.</p>
-        <button onClick={() => navigate("/")}>← Volver al inicio</button>
+        <button onClick={() => navigate("/tablero-reportes")}>← Volver al inicio</button>
       </div>
     );
   }
@@ -82,6 +97,23 @@ export default function ReportDetail() {
   const isAdmin = currentUser?.role === "admin";
   const canChangeStatus = isAdmin;
   const canVote = currentUser && report.status === "pendiente";
+  // Esperar el estado fresco antes de mostrar acciones destructivas
+  const isPendiente = freshStatus === "pendiente";
+
+  // Último porcentaje de avance
+  const ultimoAvance = avances.length > 0 ? avances[avances.length - 1] : null;
+  const ultimoPorcentaje = ultimoAvance?.porcentaje ?? null;
+
+  // Historial simplificado para todos
+  function historialSimplificado() {
+    const items = [{ icon: "📋", texto: "Reporte creado", fecha: report.createdAt }];
+    historial.forEach((h) => {
+      if (h.estado_nuevo === "en_proceso") items.push({ icon: "🏛️", texto: "Tomado por el municipio", fecha: h.cambiado_en });
+      else if (h.estado_nuevo === "resuelto")   items.push({ icon: "✅", texto: "Resuelto por el municipio", fecha: h.cambiado_en });
+      else if (h.estado_nuevo === "duplicado")  items.push({ icon: "🔁", texto: "Marcado como duplicado", fecha: h.cambiado_en });
+    });
+    return items;
+  }
 
   function handleVote() {
     if (!canVote) return;
@@ -93,7 +125,7 @@ export default function ReportDetail() {
     if (window.confirm("¿Eliminar este reporte?")) {
       deleteReport(report.id);
       addToast("Reporte eliminado", "info");
-      navigate("/");
+      navigate("/tablero-reportes");
     }
   }
 
@@ -137,7 +169,7 @@ export default function ReportDetail() {
     if (!empleadoSeleccionado) return;
     setLoadingAsignar(true);
     try {
-      await asignar(report.id, empleadoSeleccionado);
+      await asignar(report.id, empleadoSeleccionado, prioridadSeleccionada, fechaLimite || null);
       const nuevas = await getAsignacionesReporte(report.id);
       setAsignaciones(nuevas);
       addToast("Empleado asignado correctamente", "success");
@@ -224,6 +256,14 @@ export default function ReportDetail() {
             >
               {statusInfo.label}
             </span>
+            {report.status === "en_proceso" && ultimoPorcentaje !== null && (
+              <div className="report-detail__progreso">
+                <div className="report-detail__progreso-bar">
+                  <div className="report-detail__progreso-fill" style={{ width: `${ultimoPorcentaje}%` }} />
+                </div>
+                <span className="report-detail__progreso-label">{ultimoPorcentaje}% completado</span>
+              </div>
+            )}
           </div>
 
           {prioridad.label && (
@@ -234,7 +274,7 @@ export default function ReportDetail() {
 
           <div className="report-detail__top-row">
             <h1 className="report-detail__title">{report.title}</h1>
-            {isOwner && (
+            {isOwner && isPendiente && (
               <Link to={`/editar/${report.id}`} className="report-detail__edit-btn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -340,7 +380,7 @@ export default function ReportDetail() {
                 </button>
               )}
 
-              {isOwner && (
+              {isOwner && isPendiente && (
                 <button className="report-detail__delete-btn" onClick={handleDelete}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
@@ -353,38 +393,24 @@ export default function ReportDetail() {
           </div>
         </div>
 
-        {/* Historial de estados */}
-        {historial.length > 0 && (
-          <div className="report-detail__historial">
-            <h2 className="report-detail__comments-title">Historial de estados</h2>
-            <div className="report-detail__historial-list">
-              {historial.map((h, i) => {
-                const estadoInfo = STATUSES.find((s) => s.id === h.estado_nuevo);
-                return (
-                  <div key={h.id} className="historial-item">
-                    <div className="historial-item__line">
-                      {i < historial.length - 1 && <span className="historial-item__connector" />}
-                    </div>
-                    <div className="historial-item__dot" style={{ background: estadoInfo?.color ?? "#94a3b8" }} />
-                    <div className="historial-item__content">
-                      <span className="historial-item__estado" style={{ color: estadoInfo?.color ?? "#94a3b8" }}>
-                        {estadoInfo?.label ?? h.estado_nuevo}
-                      </span>
-                      {h.estado_anterior && (
-                        <span className="historial-item__anterior">
-                          desde {STATUSES.find((s) => s.id === h.estado_anterior)?.label ?? h.estado_anterior}
-                        </span>
-                      )}
-                      <span className="historial-item__meta">
-                        por {h.cambiadoPorNombre} · {formatDateShort(h.cambiado_en)}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+        {/* Historial simplificado — visible para todos */}
+        <div className="report-detail__historial">
+          <h2 className="report-detail__comments-title">Seguimiento del reporte</h2>
+          <div className="report-detail__historial-list">
+            {historialSimplificado().map((item, i, arr) => (
+              <div key={i} className="historial-item">
+                <div className="historial-item__icon-col">
+                  <span className="historial-item__icon">{item.icon}</span>
+                  {i < arr.length - 1 && <span className="historial-item__connector" />}
+                </div>
+                <div className="historial-item__content">
+                  <span className="historial-item__texto">{item.texto}</span>
+                  <span className="historial-item__meta">{formatDateShort(item.fecha)}</span>
+                </div>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
 
         {/* Fotos de campo y resolución */}
         {(report.fotoCampo || report.fotoResolucion) && (
@@ -401,6 +427,37 @@ export default function ReportDetail() {
                 <img src={report.fotoResolucion} alt="Resolución" className="report-detail__foto-img" />
               </div>
             )}
+          </div>
+        )}
+
+        {/* Diario de avances (solo admin) */}
+        {isAdmin && avances.length > 0 && (
+          <div className="report-detail__avances">
+            <h2 className="report-detail__comments-title">
+              Diario de trabajo
+              <span className="report-detail__comments-count">{avances.length} jornada{avances.length !== 1 ? "s" : ""}</span>
+            </h2>
+            <div className="avances-list">
+              {avances.map((a, i) => (
+                <div key={a.id} className="avance-item">
+                  <div className="avance-item__dot" />
+                  {i < avances.length - 1 && <div className="avance-item__line" />}
+                  <div className="avance-item__content">
+                    <div className="avance-item__header">
+                      <span className="avance-item__empleado">{a.empleado_nombre}</span>
+                      <span className="avance-item__fecha">{formatDateShort(a.creado_en)}</span>
+                    </div>
+                    <p className="avance-item__desc">{a.descripcion}</p>
+                    {a.porcentaje != null && (
+                      <div className="avance-item__barra-wrap">
+                        <div className="avance-item__barra" style={{ width: `${a.porcentaje}%` }} />
+                        <span className="avance-item__pct">{a.porcentaje}%</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -489,6 +546,23 @@ export default function ReportDetail() {
                     <option key={e.id} value={e.id}>{e.name} (@{e.username})</option>
                   ))}
                 </select>
+                <select
+                  className="asignacion-form__select asignacion-form__select--prioridad"
+                  value={prioridadSeleccionada}
+                  onChange={(e) => setPrioridadSeleccionada(e.target.value)}
+                >
+                  <option value="alta">🔺 Prioridad alta</option>
+                  <option value="media">🔸 Prioridad media</option>
+                  <option value="baja">🔹 Prioridad baja</option>
+                </select>
+                <input
+                  type="date"
+                  className="asignacion-form__date"
+                  value={fechaLimite}
+                  onChange={(e) => setFechaLimite(e.target.value)}
+                  min={new Date().toISOString().slice(0, 10)}
+                  title="Fecha límite (opcional)"
+                />
                 <button
                   className="asignacion-form__btn"
                   onClick={handleAsignar}

@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard/Dashboard";
 import Profile from "./pages/Profile/Profile";
 import Admin from "./pages/Admin/Admin";
 import PanelEmpleado from "./pages/PanelEmpleado/PanelEmpleado";
+import PerfilEmpleado from "./pages/PerfilEmpleado/PerfilEmpleado";
 
 function ProtectedRoute({ children }) {
   const { currentUser } = useAuth();
@@ -24,14 +25,14 @@ function ProtectedRoute({ children }) {
 function AdminRoute({ children }) {
   const { currentUser } = useAuth();
   if (!currentUser) return <Navigate to="/login" replace />;
-  if (currentUser.role !== "admin") return <Navigate to="/" replace />;
+  if (currentUser.role !== "admin") return <Navigate to="/tablero-reportes" replace />;
   return children;
 }
 
 function EmpleadoRoute({ children }) {
   const { currentUser } = useAuth();
   if (!currentUser) return <Navigate to="/login" replace />;
-  if (currentUser.role !== "empleado") return <Navigate to="/" replace />;
+  if (currentUser.role !== "empleado") return <Navigate to="/tablero-reportes" replace />;
   return children;
 }
 
@@ -43,17 +44,18 @@ function AppRoutes() {
       {currentUser && <Header />}
       {currentUser && <AdminSidebar />}
       <Routes>
-        <Route path="/login"    element={currentUser ? <Navigate to={currentUser.role === 'admin' ? '/dashboard' : currentUser.role === 'empleado' ? '/mi-panel' : '/'} replace /> : <Login />} />
-        <Route path="/registro" element={currentUser ? <Navigate to="/" replace /> : <Register />} />
-        <Route path="/"            element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/login"    element={currentUser ? <Navigate to={currentUser.role === 'admin' ? '/dashboard-admin' : currentUser.role === 'empleado' ? '/panel-empleado' : '/tablero-reportes'} replace /> : <Login />} />
+        <Route path="/registro" element={currentUser ? <Navigate to="/tablero-reportes" replace /> : <Register />} />
+        <Route path="/tablero-reportes" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/crear"       element={<ProtectedRoute><CreateReport /></ProtectedRoute>} />
         <Route path="/reporte/:id" element={<ProtectedRoute><ReportDetail /></ProtectedRoute>} />
         <Route path="/editar/:id"  element={<ProtectedRoute><EditReport /></ProtectedRoute>} />
-        <Route path="/dashboard"   element={<AdminRoute><Dashboard /></AdminRoute>} />
-        <Route path="/perfil"      element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        <Route path="/admin"       element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-        <Route path="/mi-panel"    element={<EmpleadoRoute><PanelEmpleado /></EmpleadoRoute>} />
-        <Route path="*"            element={<Navigate to="/" replace />} />
+        <Route path="/dashboard-admin"   element={<AdminRoute><Dashboard /></AdminRoute>} />
+        <Route path="/perfil-vecino"  element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/panel-admin"       element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+        <Route path="/panel-empleado"         element={<EmpleadoRoute><PanelEmpleado /></EmpleadoRoute>} />
+        <Route path="/perfil-empleado"        element={<EmpleadoRoute><PerfilEmpleado /></EmpleadoRoute>} />
+        <Route path="*"            element={<Navigate to="/tablero-reportes" replace />} />
       </Routes>
     </>
   );

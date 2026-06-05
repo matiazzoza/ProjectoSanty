@@ -6,7 +6,12 @@
       "Bash(git -C \"c:\\\\Users\\\\USUARIO\\\\Desktop\\\\Proyectos\\\\ProjectoSanty\" status)",
       "Bash(git -C \"c:\\\\Users\\\\USUARIO\\\\Desktop\\\\Proyectos\\\\ProjectoSanty\" log --oneline -5)",
       "Bash(git -C \"c:\\\\Users\\\\USUARIO\\\\Desktop\\\\Proyectos\\\\ProjectoSanty\" ls-files --others --exclude-standard)",
-      "Bash(git -C \"c:\\\\Users\\\\USUARIO\\\\Desktop\\\\Proyectos\\\\ProjectoSanty\" add -A)"
+      "Bash(git -C \"c:\\\\Users\\\\USUARIO\\\\Desktop\\\\Proyectos\\\\ProjectoSanty\" add -A)",
+      "Bash(git -C 'c:\\\\Users\\\\USUARIO\\\\Desktop\\\\Proyectos\\\\ProjectoSanty' commit -m ' *)",
+      "Bash(git -C \"c:\\\\Users\\\\USUARIO\\\\Desktop\\\\Proyectos\\\\ProjectoSanty\" push origin main)",
+      "Bash(git -C \"c:\\\\Users\\\\USUARIO\\\\Desktop\\\\Proyectos\\\\ProjectoSanty\" add backend/services/emailService.js backend/.env.example backend/server.js backend/package.json backend/package-lock.json .gitignore)",
+      "Bash(git -C \"c:\\\\Users\\\\USUARIO\\\\Desktop\\\\Proyectos\\\\ProjectoSanty\" rm --cached backend/.env)",
+      "Bash(git -C \"c:\\\\Users\\\\USUARIO\\\\Desktop\\\\Proyectos\\\\ProjectoSanty\" commit --amend --no-edit)"
     ]
   }
 }

@@ -1,0 +1,114 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.recuperar {
+  min-height: 100vh;
+  @include flex(row, center, center);
+  background: linear-gradient(135deg, $color-primary-light 0%, $color-bg 60%);
+  padding: $space-6;
+
+  &__card {
+    @include card;
+    width: 100%;
+    max-width: 420px;
+    padding: $space-10;
+    box-shadow: $shadow-lg;
+    @include flex(column, stretch, flex-start, $space-6);
+  }
+
+  &__header {
+    @include flex(column, center, flex-start, $space-2);
+    text-align: center;
+  }
+
+  &__icon { font-size: 2.5rem; }
+
+  &__title {
+    font-size: $font-size-2xl;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: $color-text;
+  }
+
+  &__subtitle {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    line-height: 1.5;
+  }
+
+  &__form {
+    @include flex(column, stretch, flex-start, $space-4);
+  }
+
+  &__field {
+    @include flex(column, stretch, flex-start, $space-1);
+  }
+
+  &__label {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  &__input {
+    @include input-base;
+  }
+
+  &__error {
+    font-size: $font-size-sm;
+    color: $color-danger;
+    background: rgba($color-danger, 0.06);
+    border: 1px solid rgba($color-danger, 0.2);
+    border-radius: $radius-sm;
+    padding: $space-3 $space-4;
+  }
+
+  &__submit {
+    @include button-base;
+    width: 100%;
+    padding: $space-4;
+    background: $color-primary;
+    color: white;
+    font-size: $font-size-base;
+    font-weight: 600;
+    border-radius: $radius-sm;
+
+    &:hover:not(:disabled) { background: $color-primary-dark; box-shadow: $shadow-sm; }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+
+  &__link {
+    text-align: center;
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    text-decoration: none;
+    &:hover { color: $color-primary; }
+  }
+
+  &__success {
+    @include flex(column, center, flex-start, $space-4);
+    text-align: center;
+
+    p {
+      font-size: $font-size-sm;
+      color: $color-text-muted;
+      line-height: 1.6;
+    }
+  }
+
+  &__success-icon { font-size: 2rem; }
+
+  &__back {
+    @include button-base;
+    width: 100%;
+    padding: $space-3 $space-4;
+    background: $color-primary;
+    color: white;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    border-radius: $radius-sm;
+    text-decoration: none;
+    text-align: center;
+    &:hover { background: $color-primary-dark; }
+  }
+}

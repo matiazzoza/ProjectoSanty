@@ -6,14 +6,17 @@ async function fetchReports(whereClause = '', params = []) {
             r.categoria AS category, r.estado AS status,
             r.latitud AS lat, r.longitud AS lng, r.direccion AS address,
             r.foto AS photo, r.foto_campo AS fotoCampo, r.foto_resolucion AS fotoResolucion,
-            r.estado_interno AS estadoInterno, r.autor_id AS authorId,
+            r.estado_interno AS estadoInterno, r.motivo_cancelacion AS motivoCancelacion,
+            r.verificador_id AS verificadorId, r.foto_verificacion AS fotoVerificacion,
+            r.verificacion_resultado AS verificacionResultado, r.verificacion_nota AS verificacionNota,
+            r.autor_id AS authorId,
             u.nombre AS authorName, r.creado_en AS createdAt,
             r.barrio_id AS barrioId, b.nombre AS barrioNombre,
             emp.id AS empleadoId, emp.nombre AS empleadoNombre
      FROM reportes r
      JOIN usuarios u ON r.autor_id = u.id
      LEFT JOIN barrios b ON r.barrio_id = b.id
-     LEFT JOIN asignaciones a ON a.reporte_id = r.id
+     LEFT JOIN asignaciones a ON a.reporte_id = r.id AND a.es_lider = 1 AND a.activo = 1
      LEFT JOIN usuarios emp ON emp.id = a.empleado_id
      ${whereClause}
      ORDER BY r.creado_en DESC`,
@@ -91,19 +94,17 @@ async function remove(id) {
   await pool.query('DELETE FROM reportes WHERE id = ?', [id]);
 }
 
-async function getVencidos() {
+async function getProximosAVencer() {
+  // Reportes que cruzaron el umbral de 5 días en la última hora (ventana = intervalo del job)
   const [rows] = await pool.query(
-    `SELECT id, titulo, autor_id FROM reportes
-     WHERE estado = 'en_proceso' AND actualizado_en < DATE_SUB(NOW(), INTERVAL 7 DAY)`
+    `SELECT r.id, r.titulo, a.empleado_id AS liderId
+     FROM reportes r
+     LEFT JOIN asignaciones a ON a.reporte_id = r.id AND a.es_lider = 1 AND a.activo = 1
+     WHERE r.estado = 'en_proceso'
+       AND r.actualizado_en < DATE_SUB(NOW(), INTERVAL 120 HOUR)
+       AND r.actualizado_en >= DATE_SUB(NOW(), INTERVAL 121 HOUR)`
   );
   return rows;
-}
-
-async function resetAPendiente(id) {
-  await pool.query(
-    "UPDATE reportes SET estado = 'pendiente', actualizado_en = NOW() WHERE id = ?",
-    [id]
-  );
 }
 
 async function getEstadisticasPublicas() {
@@ -135,4 +136,48 @@ async function getEstadisticasPublicas() {
   };
 }
 
-module.exports = { getAll, getById, create, update, remove, getVencidos, resetAPendiente, getEstadisticasPublicas };
+async function enviarAVerificacion(id, verificadorId) {
+  await pool.query(
+    'UPDATE reportes SET estado = ?, verificador_id = ? WHERE id = ?',
+    ['en_verificacion', verificadorId, id]
+  );
+}
+
+async function registrarVerificacion(id, resultado, foto, nota) {
+  await pool.query(
+    'UPDATE reportes SET foto_verificacion = ?, verificacion_resultado = ?, verificacion_nota = ? WHERE id = ?',
+    [foto ?? null, resultado, nota ?? null, id]
+  );
+}
+
+async function getMisVerificaciones(verificadorId) {
+  const [rows] = await pool.query(
+    `SELECT r.id, r.titulo AS title, r.descripcion AS description,
+            r.categoria AS category, r.estado AS status,
+            r.latitud AS lat, r.longitud AS lng, r.direccion AS address,
+            r.foto AS photo, r.creado_en AS createdAt,
+            r.barrio_id AS barrioId, b.nombre AS barrioNombre,
+            u.nombre AS authorName
+     FROM reportes r
+     JOIN usuarios u ON r.autor_id = u.id
+     LEFT JOIN barrios b ON r.barrio_id = b.id
+     WHERE r.verificador_id = ? AND r.estado = 'en_verificacion'
+     ORDER BY r.creado_en DESC`,
+    [verificadorId]
+  );
+  return rows.map((r) => ({
+    ...r,
+    location: { lat: parseFloat(r.lat), lng: parseFloat(r.lng), address: r.address },
+    barrio: r.barrioId ? { id: r.barrioId, nombre: r.barrioNombre } : null,
+  }));
+}
+
+async function cancelar(id, motivo) {
+  await pool.query(
+    'UPDATE reportes SET estado = ?, motivo_cancelacion = ?, estado_interno = NULL WHERE id = ?',
+    ['cancelado', motivo, id]
+  );
+  await pool.query('UPDATE asignaciones SET activo = 0 WHERE reporte_id = ?', [id]);
+}
+
+module.exports = { getAll, getById, create, update, remove, getProximosAVencer, getEstadisticasPublicas, cancelar, enviarAVerificacion, registrarVerificacion, getMisVerificaciones };

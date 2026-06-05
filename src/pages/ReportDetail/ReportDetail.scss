@@ -40,10 +40,9 @@
   &__photo {
     border-radius: $radius-lg;
     overflow: hidden;
-    max-height: 360px;
     box-shadow: $shadow-md;
 
-    img { width: 100%; object-fit: cover; max-height: 360px; }
+    img { width: 100%; height: auto; display: block; }
   }
 
   &__card {
@@ -309,6 +308,221 @@
     &:hover { background: rgba($color-danger, 0.12); border-color: $color-danger; }
   }
 
+  &__cancel-btn {
+    @include button-base;
+    padding: $space-2 $space-3;
+    background: rgba($color-danger, 0.06);
+    color: $color-danger;
+    border: 1.5px solid rgba($color-danger, 0.2);
+    border-radius: $radius-sm;
+    font-size: $font-size-xs;
+    font-weight: 600;
+
+    &:hover { background: rgba($color-danger, 0.14); border-color: $color-danger; }
+  }
+
+  &__verificar-btn {
+    @include button-base;
+    padding: $space-2 $space-3;
+    background: rgba(139, 92, 246, 0.08);
+    color: #8b5cf6;
+    border: 1.5px solid rgba(139, 92, 246, 0.3);
+    border-radius: $radius-sm;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    &:hover { background: rgba(139, 92, 246, 0.15); border-color: #8b5cf6; }
+  }
+
+  &__verificar-label {
+    display: block;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text;
+    margin-bottom: $space-2;
+  }
+
+  &__verificar-select {
+    width: 100%;
+    padding: $space-2 $space-3;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    background: $color-surface;
+    color: $color-text;
+    font-size: $font-size-sm;
+  }
+
+  &__verificar-btn-confirmar {
+    @include button-base;
+    padding: $space-2 $space-5;
+    background: #8b5cf6;
+    color: white;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    &:hover { background: #7c3aed; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  // Banner verificación
+  &__verificacion-banner {
+    @include flex(column, flex-start, flex-start, $space-2);
+    border-radius: $radius-md;
+    padding: $space-3 $space-4;
+    border-left: 4px solid;
+
+    &--confirma {
+      background: #f0fdf4; border-color: #22c55e;
+      [data-theme="dark"] & { background: #0a1f0f; }
+    }
+    &--desmiente {
+      background: #fffbeb; border-color: #f59e0b;
+      [data-theme="dark"] & { background: #1c1400; }
+    }
+  }
+
+  &__verificacion-titulo {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    color: $color-text;
+  }
+
+  &__verificacion-nota {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__verificacion-foto {
+    width: 100%;
+    max-height: 160px;
+    object-fit: cover;
+    border-radius: $radius-md;
+  }
+
+  // Banner cancelado
+  &__cancelado-banner {
+    @include flex(column, flex-start, flex-start, $space-1);
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-left: 4px solid #dc2626;
+    border-radius: $radius-md;
+    padding: $space-3 $space-4;
+    [data-theme="dark"] & { background: #1f0a0a; border-color: #7f1d1d; border-left-color: #dc2626; }
+  }
+
+  &__cancelado-titulo {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    color: #dc2626;
+  }
+
+  &__cancelado-motivo {
+    font-size: $font-size-xs;
+    color: #b91c1c;
+    [data-theme="dark"] & { color: #fca5a5; }
+  }
+
+  // Modal cancelar
+  &__modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    @include flex(row, center, center);
+    padding: $space-4;
+  }
+
+  &__modal-cancelar {
+    @include card;
+    width: 100%;
+    max-width: 520px;
+    padding: $space-6;
+    @include flex(column, stretch, flex-start, $space-5);
+  }
+
+  &__modal-cancelar-titulo {
+    font-size: $font-size-lg;
+    font-weight: 700;
+    color: #dc2626;
+  }
+
+  &__modal-cancelar-desc {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: $radius-md;
+    padding: $space-3;
+    [data-theme="dark"] & { background: #1c1400; border-color: #78350f; }
+  }
+
+  &__cancelar-opciones {
+    @include flex(column, stretch, flex-start, $space-2);
+  }
+
+  &__cancelar-opcion {
+    @include flex(row, flex-start, flex-start, $space-3);
+    padding: $space-3;
+    border: 1.5px solid $color-border;
+    border-radius: $radius-md;
+    cursor: pointer;
+    transition: border-color $transition-fast, background $transition-fast;
+
+    input[type="radio"] { margin-top: 2px; flex-shrink: 0; accent-color: #dc2626; }
+
+    &:hover {
+      border-color: #fca5a5;
+      background: #fef2f2;
+      [data-theme="dark"] & { background: #1f0a0a; border-color: #7f1d1d; }
+    }
+
+    &--active {
+      border-color: #dc2626;
+      background: #fef2f2;
+      [data-theme="dark"] & { background: #1f0a0a; border-color: #dc2626; }
+    }
+  }
+
+  &__cancelar-opcion-label {
+    display: block;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  &__cancelar-opcion-desc {
+    display: block;
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    margin-top: 2px;
+  }
+
+  &__cancelar-acciones {
+    @include flex(row, center, flex-end, $space-3);
+  }
+
+  &__cancelar-btn-volver {
+    @include button-base;
+    padding: $space-2 $space-4;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    &:hover { border-color: $color-text-muted; }
+  }
+
+  &__cancelar-btn-confirmar {
+    @include button-base;
+    padding: $space-2 $space-5;
+    background: #dc2626;
+    color: white;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    &:hover { background: #b91c1c; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
   // Historial
   &__historial {
     @include card;
@@ -449,7 +663,8 @@
   padding-bottom: $space-4;
   border-bottom: 1px solid $color-border-light;
 
-  &:last-child { border-bottom: none; padding-bottom: 0; }
+  &:last-child:not(&--oficial) { border-bottom: none; padding-bottom: 0; }
+  &--oficial:last-child { border-bottom: 1.5px solid #f59e0b; padding-bottom: $space-4; }
 
   &--oficial {
     background: #fffbeb;
@@ -457,6 +672,7 @@
     border-radius: $radius-md;
     padding: $space-4;
     margin-bottom: $space-2;
+    border-bottom: 1.5px solid #f59e0b;
 
     [data-theme="dark"] & {
       background: #422006;
@@ -501,6 +717,7 @@
     flex: 1;
     @include flex(column, flex-start, flex-start, $space-1);
     min-width: 0;
+    overflow: hidden;
   }
 
   &__header {
@@ -524,6 +741,7 @@
     color: $color-text-muted;
     line-height: 1.6;
     word-break: break-word;
+    overflow-wrap: anywhere;
   }
 
   &__delete {
@@ -776,12 +994,21 @@
 
 .asignacion-actual {
   @include flex(column, stretch, flex-start, $space-2);
+  margin-bottom: $space-3;
 
   &__item {
-    @include flex(row, center, flex-start, $space-3);
-    padding: $space-3;
+    @include flex(column, stretch, flex-start, 0);
     background: $color-bg;
     border-radius: $radius-md;
+    cursor: pointer;
+    transition: background $transition-fast;
+    overflow: hidden;
+    &:hover { background: $color-surface-raised; }
+  }
+
+  &__row {
+    @include flex(row, center, flex-start, $space-3);
+    padding: $space-3;
   }
 
   &__avatar {
@@ -796,25 +1023,196 @@
     flex-shrink: 0;
   }
 
+  &__info {
+    @include flex(column, flex-start, flex-start, 2px);
+    flex: 1;
+    min-width: 0;
+  }
+
   &__nombre {
     font-size: $font-size-sm;
     font-weight: 600;
     color: $color-text;
   }
 
-  &__fecha {
+  &__rol {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: $radius-full;
+
+    &--lider  { background: #fef9c3; color: #854d0e; }
+    &--miembro { background: #f1f5f9; color: #475569; }
+  }
+
+  &__esp-hint {
+    font-size: $font-size-sm;
+    flex-shrink: 0;
+  }
+
+  &__toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
     font-size: $font-size-xs;
     color: $color-text-muted;
+    padding: 2px 4px;
+    border-radius: $radius-sm;
+    flex-shrink: 0;
+    &:hover { color: $color-primary; }
+  }
+
+  &__esps {
+    @include flex(row, center, flex-start, $space-1);
+    flex-wrap: wrap;
+    padding: $space-2 $space-3 $space-3;
+    border-top: 1px solid $color-border;
+  }
+
+  &__esp-badge {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-text-muted;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    padding: 1px $space-2;
+    border-radius: $radius-full;
+
+    &--match {
+      color: $color-primary;
+      background: rgba($color-primary, 0.08);
+      border-color: rgba($color-primary, 0.3);
+    }
+  }
+}
+
+.asignacion-historial {
+  @include flex(column, stretch, flex-start, $space-2);
+  border-top: 1px solid $color-border;
+  padding-top: $space-3;
+
+  &__toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text-muted;
+    text-align: left;
+    &:hover { color: $color-text; }
+  }
+
+  &__grupo {
+    @include flex(column, stretch, flex-start, $space-2);
+    padding: $space-3;
+    background: $color-surface-raised;
+    border-radius: $radius-md;
+  }
+
+  &__fecha {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-text-muted;
+    margin: 0;
+  }
+
+  &__miembros {
+    @include flex(row, center, flex-start, $space-3);
+    flex-wrap: wrap;
+  }
+
+  &__item {
+    @include flex(row, center, flex-start, $space-2);
+  }
+
+  &__nombre {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text;
+    margin: 0;
+  }
+
+  &__rol {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+
+    &--lider { color: $color-primary; font-weight: 600; }
+  }
+}
+
+.asignacion-propuestas {
+  margin-top: $space-3;
+  padding: $space-3;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: $radius-md;
+
+  &__titulo {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    color: #92400e;
+    margin-bottom: $space-2;
+  }
+
+  &__item {
+    @include flex(row, center, flex-start, $space-3);
+    padding: $space-2;
+    border-radius: $radius-md;
+    margin-bottom: $space-2;
+
+    &--agregar { background: #f0fdf4; border: 1px solid #86efac; }
+    &--quitar  { background: #fef2f2; border: 1px solid #fca5a5; }
+  }
+
+  &__tipo {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-text-muted;
+  }
+
+  &__actions {
+    @include flex(row, center, flex-end, $space-2);
+    margin-left: auto;
+  }
+
+  &__btn {
+    @include button-base;
+    padding: 4px 12px;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    border-radius: $radius-full;
+
+    &--aprobar { background: #22c55e; color: white; }
+    &--rechazar { background: #ef4444; color: white; }
   }
 }
 
 .asignacion-form {
-  @include flex(row, center, flex-start, $space-3);
-  flex-wrap: wrap;
+  @include flex(column, stretch, flex-start, $space-3);
+
+  &__row {
+    @include flex(row, flex-end, flex-start, $space-3);
+    flex-wrap: wrap;
+  }
+
+  &__field {
+    @include flex(column, flex-start, flex-start, $space-1);
+    flex: 1;
+    min-width: 160px;
+  }
+
+  &__field-label {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-text-muted;
+    white-space: nowrap;
+
+    span { font-weight: 400; }
+  }
 
   &__select {
-    flex: 1;
-    min-width: 200px;
+    width: 100%;
     padding: $space-2 $space-3;
     border: 1px solid $color-border;
     border-radius: $radius-md;
@@ -824,6 +1222,7 @@
   }
 
   &__date {
+    width: 100%;
     padding: $space-2 $space-3;
     border: 1px solid $color-border;
     border-radius: $radius-md;
@@ -831,6 +1230,68 @@
     background: $color-surface;
     color: $color-text;
     font-family: inherit;
+    box-sizing: border-box;
+  }
+
+  &__miembros {
+    padding: $space-3;
+    background: $color-bg;
+    border-radius: $radius-md;
+    border: 1px solid $color-border;
+  }
+
+  &__miembros-label {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text;
+    margin-bottom: $space-2;
+
+    span { font-weight: 400; color: $color-text-muted; }
+  }
+
+  &__miembros-list {
+    @include flex(row, center, flex-start, $space-2);
+    flex-wrap: wrap;
+  }
+
+  &__miembro-check {
+    @include flex(row, center, flex-start, $space-2);
+    padding: $space-1 $space-3;
+    border-radius: $radius-full;
+    border: 1px solid $color-border;
+    background: $color-surface;
+    cursor: pointer;
+    font-size: $font-size-sm;
+    transition: background 0.15s, border-color 0.15s;
+
+    &:has(input:checked) {
+      background: $color-primary-light;
+      border-color: $color-primary;
+    }
+
+    &--match {
+      border-color: rgba($color-primary, 0.4);
+      background: rgba($color-primary, 0.04);
+    }
+
+    input { accent-color: $color-primary; }
+  }
+
+  &__miembro-esps {
+    font-size: $font-size-xs;
+    margin-left: auto;
+    opacity: 0.7;
+  }
+
+  &__miembro-avatar {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    width: 24px;
+    height: 24px;
+    border-radius: $radius-full;
+    background: $color-primary-light;
+    color: $color-primary;
+    @include flex(row, center, center);
   }
 
   &__btn {
@@ -842,6 +1303,7 @@
     font-size: $font-size-sm;
     font-weight: 600;
     white-space: nowrap;
+    align-self: flex-start;
 
     &:disabled { opacity: 0.5; cursor: not-allowed; }
   }

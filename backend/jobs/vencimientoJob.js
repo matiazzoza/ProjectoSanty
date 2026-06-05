@@ -1,24 +1,22 @@
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 const Reporte = require('../models/Reporte');
 const Notificacion = require('../models/Notificacion');
 
 async function verificarReportesVencidos() {
   try {
-    const vencidos = await Reporte.getVencidos();
-
-    for (const reporte of vencidos) {
-      await Reporte.resetAPendiente(reporte.id);
-
-      const msg = `El reporte "${reporte.titulo}" estuvo más de 7 días en proceso sin resolverse y volvió a estado Pendiente.`;
-      await Notificacion.create(uuidv4(), 'u1', `[Admin] ${msg}`);
-      if (reporte.autor_id !== 'u1') {
-        await Notificacion.create(uuidv4(), reporte.autor_id, msg);
+    const proximos = await Reporte.getProximosAVencer();
+    for (const reporte of proximos) {
+      if (reporte.liderId) {
+        await Notificacion.create(
+          randomUUID(), reporte.liderId,
+          `⚠️ El reporte "${reporte.titulo}" lleva 5 días sin actividad. Registrá un avance para mantenerlo al día.`,
+          `/reporte/${reporte.id}`
+        );
       }
-
-      console.log(`[Job] Reporte "${reporte.titulo}" volvió a pendiente.`);
+      console.log(`[VencimientoJob] Advertencia enviada para "${reporte.titulo}".`);
     }
   } catch (err) {
-    console.error('[Job] Error verificando reportes:', err.message);
+    console.error('[VencimientoJob] Error:', err.message);
   }
 }
 

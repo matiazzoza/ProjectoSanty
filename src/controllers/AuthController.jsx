@@ -24,18 +24,20 @@ export function AuthProvider({ children }) {
       localStorage.setItem('auth_token', token);
       setCurrentUser(user);
       setError('');
-      return user.role === 'admin' ? 'admin' : user.role === 'empleado' ? 'empleado' : true;
+      return user.role === 'superadmin' ? 'superadmin' : user.role === 'admin' ? 'admin' : user.role === 'empleado' ? 'empleado' : true;
     } catch (err) {
       setError(err.message || 'Usuario o contraseña incorrectos.');
       return false;
     }
   }
 
-  async function register(username, password, name) {
+  async function register(username, password, name, email, avatar) {
     try {
-      const { user, token } = await authModel.register(username, password, name);
-      localStorage.setItem('auth_token', token);
-      setCurrentUser(user);
+      const result = await authModel.register(username, password, name, email, avatar);
+      if (result.pendingVerification) {
+        setError('');
+        return 'pending';
+      }
       setError('');
       return true;
     } catch (err) {
@@ -49,9 +51,9 @@ export function AuthProvider({ children }) {
     setCurrentUser(null);
   }
 
-  async function updateProfile({ name, photo }) {
+  async function updateProfile({ name, avatar }) {
     try {
-      const updated = await authModel.updateProfile(currentUser.id, { name, photo });
+      const updated = await authModel.updateProfile(currentUser.id, { name, avatar });
       setCurrentUser(updated);
     } catch (err) {
       console.error('Error actualizando perfil:', err);

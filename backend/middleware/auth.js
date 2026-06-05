@@ -17,7 +17,7 @@ function authMiddleware(req, res, next) {
 }
 
 function adminMiddleware(req, res, next) {
-  if (req.user?.role !== 'admin') return res.status(403).json({ error: 'Solo el admin puede hacer esto.' });
+  if (req.user?.role !== 'admin' && req.user?.role !== 'superadmin') return res.status(403).json({ error: 'Solo el admin puede hacer esto.' });
   next();
 }
 
@@ -26,4 +26,9 @@ function empleadoMiddleware(req, res, next) {
   next();
 }
 
-module.exports = { authMiddleware, adminMiddleware, empleadoMiddleware, SECRET };
+function superadminMiddleware(req, res, next) {
+  if (req.user?.role !== 'superadmin') return res.status(403).json({ error: 'Solo el superadmin puede hacer esto.' });
+  next();
+}
+
+module.exports = { authMiddleware, adminMiddleware, empleadoMiddleware, superadminMiddleware, SECRET };

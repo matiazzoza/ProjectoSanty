@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../controllers/AuthController";
+import UserAvatar from "../UserAvatar/UserAvatar";
 import "./AdminSidebar.scss";
 
 export default function AdminSidebar() {
   const { currentUser } = useAuth();
   const [open, setOpen] = useState(false);
 
-  if (!currentUser || currentUser.role !== "admin") return null;
+  if (!currentUser || (currentUser.role !== "admin" && currentUser.role !== "superadmin")) return null;
 
   return (
     <>
@@ -43,16 +44,10 @@ export default function AdminSidebar() {
       <aside className={`admin-sidebar__panel ${open ? "admin-sidebar__panel--open" : ""}`}>
         <div className="admin-sidebar__header">
           <div className="admin-sidebar__header-info">
-            <div className="admin-sidebar__header-avatar">
-              {currentUser.photo ? (
-                <img src={currentUser.photo} alt="admin" />
-              ) : (
-                currentUser.avatar
-              )}
-            </div>
+            <UserAvatar avatar={currentUser.avatar} size="md" />
             <div>
               <p className="admin-sidebar__header-name">{currentUser.name}</p>
-              <p className="admin-sidebar__header-role">Administrador Municipal</p>
+              <p className="admin-sidebar__header-role">{currentUser.role === "superadmin" ? "Super Administrador" : "Administrador Municipal"}</p>
             </div>
           </div>
           <button className="admin-sidebar__close" onClick={() => setOpen(false)}>
@@ -81,6 +76,16 @@ export default function AdminSidebar() {
             <div className="admin-sidebar__item-text">
               <span className="admin-sidebar__item-name">Nuevo reporte</span>
               <span className="admin-sidebar__item-desc">Crear un reporte municipal</span>
+            </div>
+            <svg className="admin-sidebar__item-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </Link>
+          <Link to="/perfil-admin" className="admin-sidebar__item" onClick={() => setOpen(false)}>
+            <span className="admin-sidebar__item-icon">👤</span>
+            <div className="admin-sidebar__item-text">
+              <span className="admin-sidebar__item-name">Mi perfil</span>
+              <span className="admin-sidebar__item-desc">Ver mis métricas y actividad</span>
             </div>
             <svg className="admin-sidebar__item-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <polyline points="9 18 15 12 9 6" />

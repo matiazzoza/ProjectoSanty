@@ -39,12 +39,6 @@ export default function ReportCard({ report }) {
 
   return (
     <Link to={`/reporte/${report.id}`} className="report-card" style={prioridad.border ? { borderLeft: `4px solid ${prioridad.color}` } : {}}>
-      {report.photo && (
-        <div className="report-card__photo">
-          <img src={report.photo} alt={report.title} />
-        </div>
-      )}
-
       <div className="report-card__body">
         <div className="report-card__meta">
           {category && (
@@ -77,6 +71,7 @@ export default function ReportCard({ report }) {
         )}
 
         <h3 className="report-card__title">{report.title}</h3>
+        {report.photo && <span className="report-card__foto-badge">📸 Con foto</span>}
         <p className="report-card__description">{report.description}</p>
 
         {report.location?.address && (

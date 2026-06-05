@@ -96,7 +96,7 @@ export default function CreateReport() {
     return errs;
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
@@ -115,9 +115,14 @@ export default function CreateReport() {
       votes: [],
     };
 
-    addReport(report);
-    addToast("¡Reporte publicado con éxito!", "success");
-    navigate("/tablero-reportes");
+    try {
+      await addReport(report);
+      addToast("¡Reporte publicado con éxito!", "success");
+      navigate("/tablero-reportes");
+    } catch (err) {
+      const msg = err?.message || "No se pudo publicar el reporte.";
+      addToast(msg, "error");
+    }
   }
 
   return (

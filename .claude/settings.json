@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const p = require\\('./mobile/package.json'\\); const keys = Object.keys\\({...p.dependencies, ...p.devDependencies}\\); console.log\\(keys.filter\\(k => k.includes\\('expo'\\) || k.includes\\('image'\\) || k.includes\\('file'\\)\\).join\\('\\\\n'\\)\\)\")",
+      "WebFetch(domain:docs.expo.dev)",
+      "Bash(git -C \"c:\\\\Users\\\\USUARIO\\\\Desktop\\\\Proyectos\\\\ProjectoSanty\" status)",
+      "Bash(git -C \"c:\\\\Users\\\\USUARIO\\\\Desktop\\\\Proyectos\\\\ProjectoSanty\" log --oneline -5)",
+      "Bash(git -C \"c:\\\\Users\\\\USUARIO\\\\Desktop\\\\Proyectos\\\\ProjectoSanty\" ls-files --others --exclude-standard)",
+      "Bash(git -C \"c:\\\\Users\\\\USUARIO\\\\Desktop\\\\Proyectos\\\\ProjectoSanty\" add -A)"
+    ]
+  }
+}

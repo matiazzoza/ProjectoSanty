@@ -1,0 +1,16 @@
+.user-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  line-height: 1;
+  font-weight: 700;
+  color: #fff;
+
+  &--xs  { width: 24px;  height: 24px;  font-size: 13px; }
+  &--sm  { width: 32px;  height: 32px;  font-size: 16px; }
+  &--md  { width: 40px;  height: 40px;  font-size: 20px; }
+  &--lg  { width: 64px;  height: 64px;  font-size: 32px; }
+  &--xl  { width: 88px;  height: 88px;  font-size: 44px; }
+}

@@ -1,0 +1,98 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.verificar-email {
+  min-height: 100vh;
+  background: $color-bg;
+  @include flex(row, center, center);
+  padding: $space-4;
+
+  &__card {
+    @include card;
+    max-width: 420px;
+    width: 100%;
+    padding: $space-10 $space-8;
+    @include flex(column, center, flex-start, $space-4);
+    text-align: center;
+  }
+
+  &__icon {
+    font-size: 3.5rem;
+    display: block;
+  }
+
+  &__title {
+    font-size: $font-size-2xl;
+    font-weight: 800;
+    color: $color-text;
+    margin: 0;
+  }
+
+  &__text {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  &__hint {
+    font-size: $font-size-xs;
+    color: $color-text-light;
+    margin: 0;
+  }
+
+  &__reenvio-link {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: $font-size-xs;
+    color: $color-primary;
+    text-decoration: underline;
+    padding: 0;
+    &:hover { color: $color-primary-dark; }
+  }
+
+  &__reenvio-form {
+    @include flex(column, stretch, flex-start, $space-2);
+    width: 100%;
+  }
+
+  &__reenvio-input {
+    @include input-base;
+    font-size: $font-size-sm;
+    text-align: left;
+  }
+
+  &__reenvio-btn {
+    @include button-base;
+    background: $color-primary;
+    color: #fff;
+    padding: $space-2 $space-4;
+    border-radius: $radius-md;
+    font-weight: 600;
+    font-size: $font-size-sm;
+    &:hover:not(:disabled) { background: $color-primary-dark; }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+
+  &__reenvio-ok {
+    font-size: $font-size-xs;
+    color: $color-success;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  &__btn {
+    @include button-base;
+    display: inline-block;
+    background: $color-primary;
+    color: #fff;
+    padding: $space-3 $space-6;
+    border-radius: $radius-md;
+    font-weight: 600;
+    font-size: $font-size-sm;
+    text-decoration: none;
+    margin-top: $space-2;
+    &:hover { background: $color-primary-dark; }
+  }
+}

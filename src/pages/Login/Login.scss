@@ -75,6 +75,15 @@
     &:hover { color: $color-text; }
   }
 
+  &__success {
+    font-size: $font-size-sm;
+    color: $color-success;
+    background: rgba($color-success, 0.06);
+    border: 1px solid rgba($color-success, 0.2);
+    border-radius: $radius-sm;
+    padding: $space-3 $space-4;
+  }
+
   &__error {
     font-size: $font-size-sm;
     color: $color-danger;
@@ -109,6 +118,44 @@
       text-decoration: none;
       &:hover { text-decoration: underline; }
     }
+  }
+
+  &__reenvio {
+    padding: $space-4;
+    background: rgba($color-warning, 0.06);
+    border: 1px solid rgba($color-warning, 0.25);
+    border-radius: $radius-sm;
+    @include flex(column, stretch, flex-start, $space-3);
+  }
+
+  &__reenvio-texto {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  &__reenvio-form {
+    @include flex(column, stretch, flex-start, $space-2);
+  }
+
+  &__reenvio-btn {
+    @include button-base;
+    padding: $space-2 $space-4;
+    background: $color-warning;
+    color: white;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    border-radius: $radius-sm;
+    &:hover:not(:disabled) { filter: brightness(0.92); }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+
+  &__reenvio-ok {
+    font-size: $font-size-xs;
+    color: $color-success;
+    margin: 0;
+    line-height: 1.5;
   }
 
   &__hint {

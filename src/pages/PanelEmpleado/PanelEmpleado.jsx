@@ -1,11 +1,15 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { ESPECIALIDADES, CATEGORIA_ESPECIALIDAD } from "../../data/especialidades";
 import { useAuth } from "../../controllers/AuthController";
 import { useToast } from "../../controllers/ToastController";
-import { getMisAsignaciones, getMisNovedades, getMisAvances, marcarEnEjecucion, proponerCierre } from "../../models/asignacionModel";
+import { getMisAsignaciones, getMisNovedades, getMisAvances, marcarEnEjecucion, proponerCierre, getEmpleadosDisponibles, getMiEquipo, proponerMiembro, proponerBaja } from "../../models/asignacionModel";
+import { getMisVerificaciones, verificarReporte } from "../../models/reporteModel";
 import { cargarNovedad } from "../../models/novedadModel";
 import { registrarAvance } from "../../models/avanceModel";
+import { enviarMensaje, getMisMensajes } from "../../models/mensajeAdminModel";
 import { CATEGORIES } from "../../data/mockReports";
+import UserAvatar from "../../components/UserAvatar/UserAvatar";
 import "./PanelEmpleado.scss";
 
 const ESTADOS_INTERNOS = {
@@ -28,11 +32,27 @@ function toBase64(file) {
 export default function PanelEmpleado() {
   const { currentUser } = useAuth();
   const { addToast } = useToast();
+  const navigate = useNavigate();
+  const [expandidos, setExpandidos] = useState({});
   const [asignaciones, setAsignaciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [misNovedades, setMisNovedades] = useState([]);
   const [misAvances, setMisAvances] = useState([]);
-  const [activeTab, setActiveTab] = useState("reportes"); // 'reportes' | 'novedades' | 'avances'
+  const [activeTab, setActiveTab] = useState("reportes"); // 'reportes' | 'verificaciones' | 'novedades' | 'avances' | 'mensajes'
+  const [misVerificaciones, setMisVerificaciones] = useState([]);
+  const [modalVerificacion, setModalVerificacion] = useState(null); // reporte a verificar
+  const [verResultado, setVerResultado] = useState("");
+  const [verFoto, setVerFoto] = useState(null);
+  const [verFotoPreview, setVerFotoPreview] = useState(null);
+  const [verNota, setVerNota] = useState("");
+  const [loadingVer, setLoadingVer] = useState(false);
+  const [misMensajes, setMisMensajes] = useState([]);
+  const [mensajeTexto, setMensajeTexto] = useState("");
+  const [enviandoMensaje, setEnviandoMensaje] = useState(false);
+  const [mensajeTipo, setMensajeTipo] = useState("general");
+  const [mensajeReporteId, setMensajeReporteId] = useState("");
+  const [mensajeContexto, setMensajeContexto] = useState("");
+  const [confirmarEnvioReporte, setConfirmarEnvioReporte] = useState(false);
 
   // Modal en ejecución
   const [modalEjecucion, setModalEjecucion] = useState(null);
@@ -60,6 +80,13 @@ export default function PanelEmpleado() {
   const [fotoResolucionPreview, setFotoResolucionPreview] = useState(null);
   const [loadingCierre, setLoadingCierre] = useState(false);
 
+  // Modal equipo
+  const [modalEquipo, setModalEquipo] = useState(null); // { reporte_id, title }
+  const [equipo, setEquipo] = useState([]);
+  const [todosEmpleados, setTodosEmpleados] = useState([]);
+  const [empleadoAgregar, setEmpleadoAgregar] = useState("");
+  const [loadingEquipo, setLoadingEquipo] = useState(false);
+
   useEffect(() => {
     getMisAsignaciones()
       .then(setAsignaciones)
@@ -67,7 +94,74 @@ export default function PanelEmpleado() {
       .finally(() => setLoading(false));
     getMisNovedades().then(setMisNovedades).catch(() => {});
     getMisAvances().then(setMisAvances).catch(() => {});
+    getMisMensajes().then(setMisMensajes).catch(() => {});
+    getEmpleadosDisponibles().then(setTodosEmpleados).catch(() => {});
+    getMisVerificaciones().then(setMisVerificaciones).catch(() => {});
   }, []);
+
+  async function abrirModalEquipo(a) {
+    setModalEquipo(a);
+    setLoadingEquipo(true);
+    try {
+      const data = await getMiEquipo(a.reporte_id);
+      setEquipo(data);
+    } catch {
+      addToast("Error cargando equipo", "error");
+    } finally {
+      setLoadingEquipo(false);
+    }
+  }
+
+  async function handleProponerMiembro() {
+    if (!empleadoAgregar) return;
+    try {
+      await proponerMiembro(modalEquipo.reporte_id, empleadoAgregar);
+      const data = await getMiEquipo(modalEquipo.reporte_id);
+      setEquipo(data);
+      setEmpleadoAgregar("");
+      addToast("Propuesta enviada al admin", "success");
+    } catch (err) {
+      addToast(err.message, "error");
+    }
+  }
+
+  async function handleProponerBaja(empleadoId) {
+    try {
+      await proponerBaja(modalEquipo.reporte_id, empleadoId);
+      const data = await getMiEquipo(modalEquipo.reporte_id);
+      setEquipo(data);
+      addToast("Propuesta de baja enviada al admin", "success");
+    } catch (err) {
+      addToast(err.message, "error");
+    }
+  }
+
+  async function handleFotoVerificacion(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const base64 = await toBase64(file);
+    setVerFoto(base64);
+    setVerFotoPreview(base64);
+  }
+
+  async function confirmarVerificacion() {
+    if (!verResultado) return;
+    setLoadingVer(true);
+    try {
+      await verificarReporte(modalVerificacion.id, verResultado, verFoto, verNota.trim() || null);
+      setMisVerificaciones((prev) => prev.filter((r) => r.id !== modalVerificacion.id));
+      addToast("Verificación enviada. El admin fue notificado.", "success");
+      setModalVerificacion(null);
+      setVerResultado("");
+      setVerFoto(null);
+      setVerFotoPreview(null);
+      setVerNota("");
+    } catch (err) {
+      addToast(err.message, "error");
+    } finally {
+      setLoadingVer(false);
+    }
+  }
 
   async function handleFotoCampo(e) {
     const file = e.target.files[0];
@@ -200,6 +294,49 @@ export default function PanelEmpleado() {
     }
   }
 
+  function resetMensajeForm() {
+    setMensajeTexto("");
+    setMensajeTipo("general");
+    setMensajeReporteId("");
+    setMensajeContexto("");
+    setConfirmarEnvioReporte(false);
+  }
+
+  function seleccionarTipo(tipo) {
+    setMensajeTipo(tipo);
+    setMensajeReporteId("");
+    setMensajeContexto("");
+    setConfirmarEnvioReporte(false);
+  }
+
+  function seleccionarContexto(ctx) {
+    setMensajeContexto(ctx);
+    setConfirmarEnvioReporte(false);
+  }
+
+  async function handleEnviarMensaje(e) {
+    e.preventDefault();
+    if (!mensajeTexto.trim()) return;
+    setEnviandoMensaje(true);
+    try {
+      const reporteIdFinal = mensajeTipo === "reporte" ? mensajeReporteId : null;
+      const contextoFinal  = mensajeTipo === "reporte" ? mensajeContexto  : null;
+      const nuevo = await enviarMensaje(mensajeTexto.trim(), reporteIdFinal, contextoFinal);
+      setMisMensajes((prev) => [nuevo, ...prev]);
+      resetMensajeForm();
+      addToast("Mensaje enviado al admin", "success");
+    } catch (err) {
+      addToast(err.message || "Error al enviar el mensaje", "error");
+    } finally {
+      setEnviandoMensaje(false);
+    }
+  }
+
+  const canShowMensajeForm =
+    mensajeTipo === "general" ||
+    (mensajeTipo === "reporte" && mensajeReporteId && mensajeContexto &&
+      (mensajeContexto !== "reporte" || confirmarEnvioReporte));
+
   const pendientes  = asignaciones.filter((a) => a.estadoInterno === "asignado");
   const enCurso     = asignaciones.filter((a) => a.estadoInterno === "en_ejecucion" || a.estadoInterno === "pendiente_validacion" || a.estadoInterno === "bloqueado");
 
@@ -226,6 +363,12 @@ export default function PanelEmpleado() {
             📋 Reportes
             <span className="panel-empleado__tab-count">{pendientes.length + enCurso.length}</span>
           </button>
+          {misVerificaciones.length > 0 && (
+            <button className={`panel-empleado__tab ${activeTab === "verificaciones" ? "panel-empleado__tab--active" : ""}`} onClick={() => setActiveTab("verificaciones")}>
+              🔍 Verificaciones
+              <span className="panel-empleado__tab-count">{misVerificaciones.length}</span>
+            </button>
+          )}
           <button className={`panel-empleado__tab ${activeTab === "novedades" ? "panel-empleado__tab--active" : ""}`} onClick={() => setActiveTab("novedades")}>
             ⚠️ Mis novedades
             <span className="panel-empleado__tab-count">{misNovedades.length}</span>
@@ -233,6 +376,10 @@ export default function PanelEmpleado() {
           <button className={`panel-empleado__tab ${activeTab === "avances" ? "panel-empleado__tab--active" : ""}`} onClick={() => setActiveTab("avances")}>
             📊 Mis avances
             <span className="panel-empleado__tab-count">{misAvances.length}</span>
+          </button>
+          <button className={`panel-empleado__tab ${activeTab === "mensajes" ? "panel-empleado__tab--active" : ""}`} onClick={() => setActiveTab("mensajes")}>
+            ✉️ Mensajes al admin
+            <span className="panel-empleado__tab-count">{misMensajes.length}</span>
           </button>
         </div>
 
@@ -248,7 +395,7 @@ export default function PanelEmpleado() {
                 <section className="panel-empleado__section">
                   <h2 className="panel-empleado__section-title">📋 Pendientes de iniciar</h2>
                   <div className="panel-empleado__grid">
-                    {pendientes.map((a) => <TarjetaReporte key={a.reporte_id} a={a} onEjecucion={() => setModalEjecucion(a)} />)}
+                    {pendientes.map((a) => <TarjetaReporte key={a.reporte_id} a={a} onEjecucion={a.es_lider ? () => setModalEjecucion(a) : null} onEquipo={() => abrirModalEquipo(a)} />)}
                   </div>
                 </section>
               )}
@@ -263,6 +410,7 @@ export default function PanelEmpleado() {
                         onCierre={a.estadoInterno === "en_ejecucion" ? () => setModalCierre(a) : null}
                         onNovedad={a.estadoInterno !== "pendiente_validacion" ? () => setModalNovedad(a) : null}
                         onAvance={a.estadoInterno === "en_ejecucion" ? () => { setModalAvance(a); setAvancePct(a.ultimoPorcentaje ?? 0); } : null}
+                        onEquipo={() => abrirModalEquipo(a)}
                       />
                     ))}
                   </div>
@@ -270,6 +418,39 @@ export default function PanelEmpleado() {
               )}
             </>
           )
+        )}
+
+        {/* Tab: Verificaciones */}
+        {activeTab === "verificaciones" && (
+          <section className="panel-empleado__section">
+            <p className="panel-empleado__ver-aviso">
+              🔍 El admin te asignó verificar estos reportes en campo. Confirmá o desmentí el problema y subí una foto.
+            </p>
+            <div className="panel-empleado__ver-lista">
+              {misVerificaciones.map((r) => {
+                const cat = CATEGORIES.find((c) => c.id === r.category);
+                return (
+                  <div key={r.id} className="panel-empleado__ver-item">
+                    <div className="panel-empleado__ver-info">
+                      {cat && <span className="panel-empleado__ver-cat">{cat.icon} {cat.label}</span>}
+                      <p className="panel-empleado__ver-title">{r.title}</p>
+                      {r.location?.address && <p className="panel-empleado__ver-dir">📍 {r.location.address}</p>}
+                      {r.barrio && <p className="panel-empleado__ver-barrio">{r.barrio.nombre}</p>}
+                    </div>
+                    <div className="panel-empleado__ver-acciones">
+                      <Link to={`/reporte/${r.id}`} className="panel-empleado__ver-link">Ver reporte</Link>
+                      <button
+                        className="panel-empleado__ver-btn"
+                        onClick={() => setModalVerificacion(r)}
+                      >
+                        Registrar verificación
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
         )}
 
         {/* Tab: Mis novedades */}
@@ -280,7 +461,7 @@ export default function PanelEmpleado() {
             ) : (
               <div className="panel-empleado__novedades-list">
                 {misNovedades.map((n) => (
-                  <div key={n.id} className={`panel-empleado__novedad-item panel-empleado__novedad-item--${n.tipo}`}>
+                  <Link key={n.id} to={`/reporte/${n.reporte_id}`} className={`panel-empleado__novedad-item panel-empleado__novedad-item--${n.tipo} panel-empleado__novedad-item--link`}>
                     <div className="panel-empleado__novedad-header">
                       <span className="panel-empleado__novedad-tipo">
                         {n.tipo === "bloqueante" ? "🚨 Bloqueante" : "📝 Informativa"}
@@ -297,7 +478,7 @@ export default function PanelEmpleado() {
                     ) : (
                       <p className="panel-empleado__novedad-pendiente">⏳ Sin respuesta del admin aún</p>
                     )}
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
@@ -336,7 +517,235 @@ export default function PanelEmpleado() {
             )}
           </section>
         )}
-      </div>
+
+        {/* Tab: Mensajes al admin */}
+        {activeTab === "mensajes" && (
+          <section className="panel-empleado__section">
+            <div className="panel-empleado__mensaje-form">
+
+              {/* Tipo de mensaje */}
+              <p className="panel-empleado__modal-label">¿Sobre qué querés escribir?</p>
+              <div className="panel-empleado__msg-tipo-group">
+                <button
+                  type="button"
+                  className={`panel-empleado__msg-tipo-btn ${mensajeTipo === "general" ? "panel-empleado__msg-tipo-btn--active" : ""}`}
+                  onClick={() => seleccionarTipo("general")}
+                >
+                  💬 General
+                  <span>Cualquier consulta o comentario</span>
+                </button>
+                <button
+                  type="button"
+                  className={`panel-empleado__msg-tipo-btn ${mensajeTipo === "reporte" ? "panel-empleado__msg-tipo-btn--active" : ""}`}
+                  onClick={() => seleccionarTipo("reporte")}
+                >
+                  📋 Sobre un reporte
+                  <span>Vinculado a una de tus asignaciones</span>
+                </button>
+              </div>
+
+              {/* Selector de reporte */}
+              {mensajeTipo === "reporte" && (
+                <>
+                  <label className="panel-empleado__modal-label">Seleccioná el reporte</label>
+                  <select
+                    className="panel-empleado__modal-select"
+                    value={mensajeReporteId}
+                    onChange={(e) => { setMensajeReporteId(e.target.value); setMensajeContexto(""); setConfirmarEnvioReporte(false); }}
+                  >
+                    <option value="">Seleccioná un reporte...</option>
+                    {asignaciones.map((a) => (
+                      <option key={a.reporte_id} value={a.reporte_id}>{a.title}</option>
+                    ))}
+                  </select>
+
+                  {/* Selector de contexto */}
+                  {mensajeReporteId && (
+                    <>
+                      <label className="panel-empleado__modal-label">¿Sobre qué aspecto?</label>
+                      <div className="panel-empleado__msg-contexto-group">
+                        <button
+                          type="button"
+                          className={`panel-empleado__msg-contexto-btn ${mensajeContexto === "reporte" ? "panel-empleado__msg-contexto-btn--active" : ""}`}
+                          onClick={() => seleccionarContexto("reporte")}
+                        >
+                          📋 El reporte
+                          <span>Tarea, condiciones, materiales</span>
+                        </button>
+                        <button
+                          type="button"
+                          className={`panel-empleado__msg-contexto-btn ${mensajeContexto === "equipo" ? "panel-empleado__msg-contexto-btn--active" : ""}`}
+                          onClick={() => seleccionarContexto("equipo")}
+                        >
+                          👥 El equipo
+                          <span>Coordinación, ausencias, conflictos</span>
+                        </button>
+                        <button
+                          type="button"
+                          className={`panel-empleado__msg-contexto-btn ${mensajeContexto === "ambos" ? "panel-empleado__msg-contexto-btn--active" : ""}`}
+                          onClick={() => seleccionarContexto("ambos")}
+                        >
+                          🔀 Ambos
+                          <span>Involucra reporte y equipo</span>
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Aviso cuando el contexto es "reporte" */}
+                  {mensajeContexto === "reporte" && !confirmarEnvioReporte && (
+                    <div className="panel-empleado__msg-aviso">
+                      <p className="panel-empleado__msg-aviso-texto">
+                        ⚠️ Las novedades sobre el reporte deben cargarse en la sección <strong>Novedades</strong> para quedar registradas oficialmente en el historial.
+                        Si aun así querés enviar este mensaje de forma privada al admin, podés hacerlo.
+                      </p>
+                      <div className="panel-empleado__msg-aviso-acciones">
+                        <button
+                          type="button"
+                          className="panel-empleado__msg-aviso-btn panel-empleado__msg-aviso-btn--novedad"
+                          onClick={() => {
+                            const asig = asignaciones.find((a) => a.reporte_id === mensajeReporteId);
+                            if (asig) setModalNovedad(asig);
+                            setActiveTab("reportes");
+                          }}
+                        >
+                          → Cargar novedad
+                        </button>
+                        <button
+                          type="button"
+                          className="panel-empleado__msg-aviso-btn panel-empleado__msg-aviso-btn--igual"
+                          onClick={() => setConfirmarEnvioReporte(true)}
+                        >
+                          Enviar de todas formas
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Formulario de texto */}
+              {canShowMensajeForm && (
+                <form onSubmit={handleEnviarMensaje} style={{ display: "contents" }}>
+                  <textarea
+                    className="panel-empleado__modal-textarea"
+                    placeholder={
+                      mensajeTipo === "general"
+                        ? "Escribí tu consulta o comentario al administrador..."
+                        : mensajeContexto === "equipo"
+                        ? "Describí la situación con el equipo..."
+                        : "Escribí tu mensaje al administrador..."
+                    }
+                    value={mensajeTexto}
+                    onChange={(e) => setMensajeTexto(e.target.value)}
+                    rows={4}
+                  />
+                  <button
+                    className="panel-empleado__modal-confirm"
+                    type="submit"
+                    disabled={enviandoMensaje || !mensajeTexto.trim()}
+                  >
+                    {enviandoMensaje ? "Enviando..." : "✉️ Enviar mensaje"}
+                  </button>
+                </form>
+              )}
+            </div>
+
+            {/* Historial */}
+            {misMensajes.length > 0 && (
+              <div className="panel-empleado__mensajes-historial">
+                <p className="panel-empleado__modal-label">Mensajes enviados</p>
+                {misMensajes.map((m) => (
+                  <div key={m.id} className="panel-empleado__mensaje-item">
+                    {m.reporteTitulo && (
+                      <div className="panel-empleado__mensaje-reporte">
+                        <Link to={`/reporte/${m.reporteId}`} className="panel-empleado__mensaje-reporte-link">
+                          📋 {m.reporteTitulo}
+                        </Link>
+                        <span className={`panel-empleado__mensaje-contexto panel-empleado__mensaje-contexto--${m.contexto}`}>
+                          {m.contexto === "equipo" ? "👥 Equipo" : m.contexto === "ambos" ? "🔀 Ambos" : "📋 Reporte"}
+                        </span>
+                      </div>
+                    )}
+                    <p className="panel-empleado__mensaje-contenido">{m.contenido}</p>
+                    <div className="panel-empleado__mensaje-meta">
+                      <span>{new Date(m.creadoEn).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                      <span className={`panel-empleado__mensaje-estado ${m.leido ? "panel-empleado__mensaje-estado--leido" : ""}`}>
+                        {m.leido ? "✅ Visto" : "⏳ Sin leer"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+      </div>{/* fin panel-empleado__container */}
+
+      {/* Modal: verificación en campo */}
+      {modalVerificacion && (
+        <div className="panel-empleado__modal-bg" onClick={(e) => e.target === e.currentTarget && setModalVerificacion(null)}>
+          <div className="panel-empleado__modal">
+            <h3 className="panel-empleado__modal-title">🔍 Verificación en campo</h3>
+            <p className="panel-empleado__modal-desc"><strong>{modalVerificacion.title}</strong></p>
+
+            <div className="panel-empleado__modal-field">
+              <label className="panel-empleado__modal-label">¿Qué encontraste?</label>
+              <div className="panel-empleado__modal-tipo-group">
+                <button
+                  className={`panel-empleado__modal-tipo-btn ${verResultado === "confirma" ? "panel-empleado__modal-tipo-btn--active" : ""}`}
+                  onClick={() => setVerResultado("confirma")}
+                >
+                  ✅ Confirmo el problema
+                  <span>El problema existe tal como fue reportado</span>
+                </button>
+                <button
+                  className={`panel-empleado__modal-tipo-btn panel-empleado__modal-tipo-btn--bloqueante ${verResultado === "desmiente" ? "panel-empleado__modal-tipo-btn--active-bloqueante" : ""}`}
+                  onClick={() => setVerResultado("desmiente")}
+                >
+                  ❌ No encontré el problema
+                  <span>El problema no existe o ya fue resuelto</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="panel-empleado__modal-field">
+              <label className="panel-empleado__modal-label">
+                📸 Foto del lugar <span className="panel-empleado__modal-req">(obligatoria)</span>
+              </label>
+              <input type="file" accept="image/*" onChange={handleFotoVerificacion} className="panel-empleado__modal-file" />
+              {verFotoPreview && <img src={verFotoPreview} alt="preview" className="panel-empleado__modal-preview" />}
+            </div>
+
+            <div className="panel-empleado__modal-field">
+              <label className="panel-empleado__modal-label">
+                Nota adicional <span style={{ fontWeight: 400, color: "#94a3b8", fontSize: "0.75rem" }}>(opcional)</span>
+              </label>
+              <textarea
+                className="panel-empleado__modal-textarea"
+                placeholder="Describí lo que observaste..."
+                value={verNota}
+                onChange={(e) => setVerNota(e.target.value)}
+                rows={2}
+              />
+            </div>
+
+            <div className="panel-empleado__modal-actions">
+              <button className="panel-empleado__modal-cancel" onClick={() => { setModalVerificacion(null); setVerResultado(""); setVerFoto(null); setVerFotoPreview(null); setVerNota(""); }}>
+                Cancelar
+              </button>
+              <button
+                className="panel-empleado__modal-confirm"
+                onClick={confirmarVerificacion}
+                disabled={loadingVer || !verResultado || !verFoto}
+              >
+                {loadingVer ? "Enviando..." : "Enviar verificación"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal: avance */}
       {modalAvance && (
@@ -489,6 +898,146 @@ export default function PanelEmpleado() {
         </div>
       )}
 
+      {/* Modal: gestión de equipo */}
+      {modalEquipo && (
+        <div className="panel-empleado__modal-bg" onClick={(e) => e.target === e.currentTarget && (setModalEquipo(null), setExpandidos({}))}>
+          <div className="panel-empleado__modal panel-empleado__modal--equipo">
+            <h3 className="panel-empleado__modal-title">
+              {!!modalEquipo.es_lider ? "👥 Gestión de equipo" : "👥 Mi equipo"}
+            </h3>
+            <p className="panel-empleado__modal-desc"><strong>{modalEquipo.title}</strong></p>
+
+            {loadingEquipo ? (
+              <p style={{ color: "#94a3b8", fontSize: "0.875rem" }}>Cargando equipo...</p>
+            ) : (
+              <>
+                {/* Miembros actuales */}
+                {(() => {
+                  const matchEsp = CATEGORIA_ESPECIALIDAD[modalEquipo?.category] ?? null;
+                  return (
+                    <div className="panel-empleado__equipo-lista">
+                      {equipo.filter((m) => m.aprobado === 'aprobado').map((m) => {
+                        const isExpanded = !!expandidos[m.empleado_id];
+                        const espObj = matchEsp ? ESPECIALIDADES.find((x) => x.id === matchEsp) : null;
+                        const tieneEsps = m.especialidades?.length > 0;
+                        return (
+                          <div
+                            key={m.empleado_id}
+                            className="panel-empleado__equipo-item"
+                            onClick={() => navigate(`/perfil-empleado/${m.empleado_id}`)}
+                          >
+                            <div className="panel-empleado__equipo-row">
+                              <UserAvatar avatar={m.empleado_avatar} size="sm" />
+                              <div className="panel-empleado__equipo-info">
+                                <span className="panel-empleado__equipo-nombre">{m.empleado_nombre}</span>
+                                <span className={`panel-empleado__equipo-rol ${!!m.es_lider ? "panel-empleado__equipo-rol--lider" : ""}`}>
+                                  {!!m.es_lider ? "👑 Líder" : "👤 Miembro"}
+                                </span>
+                              </div>
+                              {!isExpanded && espObj && m.especialidades?.includes(matchEsp) && (
+                                <span className="panel-empleado__equipo-esp-hint" title={espObj.label}>{espObj.icon}</span>
+                              )}
+                              {tieneEsps && (
+                                <button
+                                  className="panel-empleado__equipo-toggle"
+                                  onClick={(e) => { e.stopPropagation(); setExpandidos((prev) => ({ ...prev, [m.empleado_id]: !prev[m.empleado_id] })); }}
+                                  title={isExpanded ? "Ocultar especialidades" : "Ver especialidades"}
+                                >
+                                  {isExpanded ? "▲" : "▼"}
+                                </button>
+                              )}
+                              {!!modalEquipo.es_lider && !m.es_lider && (
+                                <button
+                                  className="panel-empleado__equipo-baja"
+                                  onClick={(e) => { e.stopPropagation(); handleProponerBaja(m.empleado_id); }}
+                                >
+                                  Proponer baja
+                                </button>
+                              )}
+                            </div>
+                            {isExpanded && (
+                              <div className="panel-empleado__equipo-esps">
+                                {m.especialidades.map((espId) => {
+                                  const esp = ESPECIALIDADES.find((x) => x.id === espId);
+                                  return esp ? (
+                                    <span
+                                      key={espId}
+                                      className={`panel-empleado__equipo-esp-badge${espId === matchEsp ? " panel-empleado__equipo-esp-badge--match" : ""}`}
+                                    >
+                                      {esp.icon} {esp.label}
+                                    </span>
+                                  ) : null;
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+
+                {/* Propuestas pendientes — solo visible para el líder */}
+                {!!modalEquipo.es_lider && equipo.some((m) => m.aprobado !== 'aprobado') && (
+                  <div className="panel-empleado__equipo-pendientes">
+                    <p className="panel-empleado__equipo-pendientes-titulo">⏳ Pendientes de aprobación</p>
+                    {equipo.filter((m) => m.aprobado !== 'aprobado').map((m) => (
+                      <div key={m.empleado_id} className="panel-empleado__equipo-item panel-empleado__equipo-item--pendiente">
+                        <div className="panel-empleado__equipo-row">
+                          <UserAvatar avatar={m.empleado_avatar} size="sm" />
+                          <div className="panel-empleado__equipo-info">
+                            <span className="panel-empleado__equipo-nombre">{m.empleado_nombre}</span>
+                            <span className="panel-empleado__equipo-pendiente-tipo">
+                              {m.aprobado === 'pendiente' ? '➕ Alta pendiente' : '➖ Baja pendiente'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Proponer nuevo miembro — solo visible para el líder */}
+                {!!modalEquipo.es_lider && (
+                  <div className="panel-empleado__equipo-agregar">
+                    <p className="panel-empleado__modal-label">Proponer nuevo miembro</p>
+                    <div className="panel-empleado__equipo-agregar-row">
+                      <select
+                        className="panel-empleado__modal-select"
+                        value={empleadoAgregar}
+                        onChange={(e) => setEmpleadoAgregar(e.target.value)}
+                      >
+                        <option value="">Seleccioná un empleado...</option>
+                        {todosEmpleados
+                          .filter((e) => !equipo.some((m) => m.empleado_id === e.id))
+                          .map((e) => (
+                            <option key={e.id} value={e.id}>
+                              {e.name} (@{e.username}){e.reportesActivos > 0 ? ` — ${e.reportesActivos} reporte${e.reportesActivos > 1 ? "s" : ""} activo${e.reportesActivos > 1 ? "s" : ""}` : " — disponible"}
+                            </option>
+                          ))}
+                      </select>
+                      <button
+                        className="panel-empleado__modal-confirm"
+                        onClick={handleProponerMiembro}
+                        disabled={!empleadoAgregar}
+                      >
+                        Proponer
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            <div className="panel-empleado__modal-actions">
+              <button className="panel-empleado__modal-cancel" onClick={() => { setModalEquipo(null); setEmpleadoAgregar(""); }}>
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal: proponer cierre */}
       {modalCierre && (
         <div className="panel-empleado__modal-bg" onClick={(e) => e.target === e.currentTarget && setModalCierre(null)}>
@@ -542,12 +1091,12 @@ function getFechaLimiteInfo(fechaLimite) {
   return { label: `Límite: ${new Date(fechaLimite).toLocaleDateString("es-AR", { day: "2-digit", month: "short" })}`, color: "#64748b", bg: "#f1f5f9" };
 }
 
-function TarjetaReporte({ a, onEjecucion, onCierre, onNovedad, onAvance }) {
+function TarjetaReporte({ a, onEjecucion, onCierre, onNovedad, onAvance, onEquipo }) {
   const cat = CATEGORIES.find((c) => c.id === a.category);
   const estado = ESTADOS_INTERNOS[a.estadoInterno] || {};
   const prioridad = PRIORIDAD_INFO[a.prioridad] || null;
   const fechaInfo = getFechaLimiteInfo(a.fechaLimite);
-  const tieneAcciones = onEjecucion || onCierre || onNovedad || onAvance;
+  const tieneAcciones = onEjecucion || onCierre || onNovedad || onAvance || onEquipo;
 
   function stopProp(fn) {
     return (e) => { e.preventDefault(); e.stopPropagation(); fn(); };
@@ -593,6 +1142,11 @@ function TarjetaReporte({ a, onEjecucion, onCierre, onNovedad, onAvance }) {
             <img src={a.fotoResolucion} alt="resolución" />
           </div>
         )}
+        {a.estadoInterno === "asignado" && !a.es_lider && (
+          <div className="panel-empleado__card-espera">
+            ⏳ Esperando inicio del líder
+          </div>
+        )}
         {tieneAcciones && (
         <div className="panel-empleado__card-actions">
           {onEjecucion && (
@@ -613,6 +1167,11 @@ function TarjetaReporte({ a, onEjecucion, onCierre, onNovedad, onAvance }) {
           {onNovedad && (
             <button className="panel-empleado__card-btn panel-empleado__card-btn--novedad" onClick={stopProp(onNovedad)}>
               ⚠️ Novedad
+            </button>
+          )}
+          {onEquipo && (
+            <button className="panel-empleado__card-btn panel-empleado__card-btn--equipo" onClick={stopProp(onEquipo)}>
+              👥 Equipo
             </button>
           )}
         </div>

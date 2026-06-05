@@ -2,28 +2,37 @@ const { randomUUID } = require('crypto');
 const Avance = require('../models/Avance');
 const Notificacion = require('../models/Notificacion');
 const pool = require('../db');
+const { contienePalabraProhibida } = require('../utils/filtroTexto');
+const { getReporteTitulo, getAdminIds, validarAsignacionActiva } = require('../utils/dbHelpers');
 
 async function registrarAvance(req, res) {
   const { reporteId } = req.params;
-  const { descripcion, porcentaje } = req.body;
+  const { descripcion, porcentaje, lat, lng } = req.body;
 
   if (!descripcion?.trim()) return res.status(400).json({ error: 'La descripción es obligatoria.' });
+  if (contienePalabraProhibida(descripcion)) return res.status(400).json({ error: 'Tu avance contiene lenguaje inapropiado.' });
 
   try {
-    const [rep] = await pool.query('SELECT titulo FROM reportes WHERE id = ?', [reporteId]);
-    if (!rep[0]) return res.status(404).json({ error: 'Reporte no encontrado.' });
+    const titulo = await getReporteTitulo(reporteId);
+    if (!titulo) return res.status(404).json({ error: 'Reporte no encontrado.' });
+
+    const asignado = await validarAsignacionActiva(reporteId, req.user.id);
+    if (!asignado) return res.status(403).json({ error: 'No estás asignado activamente a este reporte.' });
 
     const avance = await Avance.create(randomUUID(), {
       reporteId, empleadoId: req.user.id,
       descripcion: descripcion.trim(),
       porcentaje: porcentaje ?? null,
+      lat: lat ?? null,
+      lng: lng ?? null,
     });
 
-    // Notificar al admin
-    const [admins] = await pool.query("SELECT id FROM usuarios WHERE rol = 'admin'");
+    await pool.query('UPDATE reportes SET actualizado_en = NOW() WHERE id = ?', [reporteId]);
+
+    const admins = await getAdminIds();
     await Promise.all(admins.map((a) =>
       Notificacion.create(randomUUID(), a.id,
-        `📊 Nuevo avance en "${rep[0].titulo}"${porcentaje ? ` (${porcentaje}%)` : ''}: ${descripcion.trim().slice(0, 80)}`,
+        `📊 Nuevo avance en "${titulo}"${porcentaje ? ` (${porcentaje}%)` : ''}: ${descripcion.trim().slice(0, 80)}`,
         `/reporte/${reporteId}`
       )
     ));

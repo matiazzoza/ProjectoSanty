@@ -1,0 +1,506 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.superadmin {
+  min-height: 100vh;
+  background: $color-bg;
+  padding: $space-8 $space-4;
+
+  &__container {
+    max-width: 900px;
+    margin: 0 auto;
+    @include flex(column, stretch, flex-start, $space-6);
+  }
+
+  &__header {
+    @include flex(row, center, space-between);
+    flex-wrap: wrap;
+    gap: $space-4;
+  }
+
+  &__title {
+    font-size: $font-size-2xl;
+    font-weight: 800;
+    color: $color-text;
+  }
+
+  &__subtitle {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    margin-top: 2px;
+  }
+
+  &__tabs {
+    @include flex(row, center, flex-start, $space-2);
+    border-bottom: 2px solid $color-border;
+    padding-bottom: 0;
+  }
+
+  &__tab {
+    @include button-base;
+    padding: $space-2 $space-5;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text-muted;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    border-radius: 0;
+    &:hover { color: $color-text; }
+
+    &--active {
+      color: $color-primary;
+      border-bottom-color: $color-primary;
+    }
+  }
+}
+
+// ── Dashboard ────────────────────────────────────────────────────────────────
+
+.sa__empty {
+  text-align: center;
+  color: $color-text-muted;
+  font-size: $font-size-sm;
+  padding: $space-8 0;
+}
+
+.sa-dashboard {
+  @include flex(column, stretch, flex-start, $space-8);
+}
+
+.sa-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $space-3;
+  @media (max-width: 640px) { grid-template-columns: repeat(2, 1fr); }
+}
+
+.sa-stat {
+  @include card;
+  @include flex(column, center, center, $space-1);
+  padding: $space-5;
+  text-align: center;
+  border-top: 3px solid;
+  text-decoration: none;
+
+  &__icon { font-size: 1.5rem; }
+  &__value { font-size: $font-size-2xl; font-weight: 800; }
+  &__label { font-size: $font-size-xs; color: $color-text-muted; }
+
+  &--link {
+    cursor: pointer;
+    transition: transform $transition-fast, box-shadow $transition-fast;
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+.sa-section {
+  @include flex(column, stretch, flex-start, $space-4);
+
+  &__title {
+    font-size: $font-size-base;
+    font-weight: 700;
+    color: $color-text;
+    border-bottom: 1px solid $color-border;
+    padding-bottom: $space-2;
+  }
+}
+
+.sa-alerts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: $space-4;
+}
+
+.sa-alert-panel {
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  border-top: 3px solid;
+
+  &__header {
+    @include flex(row, center, flex-start, $space-2);
+    padding: $space-3 $space-4;
+    font-size: $font-size-sm;
+  }
+
+  &__title {
+    flex: 1;
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  &__badge {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    padding: 2px $space-2;
+    border-radius: $radius-full;
+  }
+
+  &__body {
+    @include flex(column, stretch, flex-start);
+  }
+}
+
+.sa-alert-item {
+  @include flex(column, flex-start, flex-start, 2px);
+  padding: $space-3 $space-4;
+  border-top: 1px solid $color-border;
+  text-decoration: none;
+  transition: background $transition-fast;
+  &:hover { background: $color-border; }
+
+  &__title {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  &__meta {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+}
+
+.sa-perf-list {
+  @include flex(column, stretch, flex-start, $space-2);
+}
+
+.sa-perf-row {
+  @include card;
+  @include flex(row, center, flex-start, $space-3);
+  padding: $space-3 $space-4;
+  flex-wrap: wrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color $transition-fast;
+
+  &:hover { border-color: $color-primary; }
+
+  &__avatar { font-size: 1.5rem; flex-shrink: 0; }
+  &__name   { font-size: $font-size-sm; font-weight: 600; color: $color-text; flex: 1; min-width: 120px; }
+
+  &__stats {
+    @include flex(row, center, flex-start, $space-3);
+    flex-wrap: wrap;
+  }
+
+  &__stat {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    padding: 2px $space-2;
+    border-radius: $radius-full;
+
+    &--green  { background: #f0fdf4; color: #16a34a; }
+    &--blue   { background: #eff6ff; color: $color-primary; }
+    &--purple { background: #fdf4ff; color: #7c3aed; }
+    &--orange { background: #fffbeb; color: #d97706; }
+  }
+
+  &__stat-check {
+    opacity: 0.6;
+    font-size: 0.7rem;
+    font-weight: 500;
+    margin-left: 2px;
+  }
+}
+
+.sa-activity {
+  @include flex(column, stretch, flex-start, $space-2);
+}
+
+.sa-activity__item {
+  @include card;
+  @include flex(row, center, space-between, $space-4);
+  padding: $space-3 $space-4;
+  text-decoration: none;
+  transition: border-color $transition-fast;
+  &:hover { border-color: $color-primary; }
+}
+
+.sa-activity__info {
+  @include flex(column, flex-start, flex-start, 2px);
+  flex: 1;
+  min-width: 0;
+}
+
+.sa-activity__title {
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: $color-text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sa-activity__meta {
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+}
+
+.sa-activity__date {
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  flex-shrink: 0;
+}
+
+// ── Usuarios ─────────────────────────────────────────────────────────────────
+
+.sa-usuarios {
+  @include flex(column, stretch, flex-start, $space-4);
+
+  &__toolbar {
+    @include flex(row, center, space-between, $space-4);
+    flex-wrap: wrap;
+    gap: $space-3;
+  }
+
+  &__right {
+    @include flex(row, center, flex-start, $space-3);
+  }
+}
+
+.sa-tabs-rol {
+  @include flex(row, center, flex-start, $space-1);
+  flex-wrap: wrap;
+}
+
+.sa-tab-rol {
+  @include button-base;
+  @include flex(row, center, flex-start, $space-1);
+  padding: $space-2 $space-3;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  background: transparent;
+  &:hover { background: $color-border; color: $color-text; }
+
+  &--active {
+    background: $color-primary;
+    color: #fff;
+    &:hover { background: $color-primary-dark; }
+  }
+
+  &__count {
+    font-size: $font-size-xs;
+    background: rgba(255,255,255,0.25);
+    padding: 1px 6px;
+    border-radius: $radius-full;
+    .sa-tab-rol:not(.sa-tab-rol--active) & { background: $color-border; color: $color-text-muted; }
+  }
+}
+
+.sa-search {
+  padding: $space-2 $space-3;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  background: $color-surface;
+  color: $color-text;
+  width: 200px;
+  &:focus { outline: none; border-color: $color-primary; }
+}
+
+.sa-btn-crear {
+  @include button-base;
+  background: $color-primary;
+  color: #fff;
+  padding: $space-2 $space-5;
+  border-radius: $radius-md;
+  font-weight: 600;
+  font-size: $font-size-sm;
+  white-space: nowrap;
+  &:hover { background: $color-primary-dark; }
+}
+
+.sa-user-list {
+  @include flex(column, stretch, flex-start, $space-2);
+}
+
+.sa-user {
+  @include card;
+  @include flex(row, center, flex-start, $space-4);
+  padding: $space-3 $space-4;
+
+  &__avatar { font-size: 1.75rem; flex-shrink: 0; width: 44px; text-align: center; }
+
+  &__info {
+    @include flex(column, flex-start, flex-start, 2px);
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name     { font-size: $font-size-sm; font-weight: 600; color: $color-text; }
+  &__username { font-size: $font-size-xs; color: $color-text-muted; }
+
+  &__rol {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    padding: 3px $space-3;
+    border-radius: $radius-full;
+    flex-shrink: 0;
+  }
+
+  &__actions { @include flex(row, center, flex-start, $space-2); flex-shrink: 0; }
+}
+
+.sa-btn-edit {
+  @include button-base;
+  font-size: $font-size-xs;
+  padding: $space-1 $space-3;
+  border-radius: $radius-md;
+  border: 1px solid $color-border;
+  background: $color-surface;
+  color: $color-text;
+  &:hover { border-color: $color-primary; color: $color-primary; }
+}
+
+.sa-btn-reset {
+  @include button-base;
+  font-size: $font-size-xs;
+  padding: $space-1 $space-3;
+  border-radius: $radius-md;
+  border: 1px solid #ddd6fe;
+  background: #f5f3ff;
+  color: #7c3aed;
+  &:hover:not(:disabled) { background: #ede9fe; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.sa-btn-delete {
+  @include button-base;
+  font-size: $font-size-xs;
+  padding: $space-1 $space-3;
+  border-radius: $radius-md;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+  &:hover { background: #fee2e2; }
+}
+
+// ── Modal ────────────────────────────────────────────────────────────────────
+
+.superadmin-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 50;
+  @include flex(row, center, center);
+  padding: $space-4;
+
+  &__box {
+    background: $color-surface;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-lg;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    &--sm { max-width: 360px; }
+  }
+
+  &__header {
+    @include flex(row, center, space-between);
+    padding: $space-5 $space-6;
+    border-bottom: 1px solid $color-border;
+  }
+
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: 700;
+    color: $color-text;
+  }
+
+  &__close {
+    @include button-base;
+    width: 30px; height: 30px;
+    border-radius: $radius-full;
+    background: $color-bg;
+    border: 1px solid $color-border;
+    color: $color-text-muted;
+    @include flex(row, center, center);
+    &:hover { background: $color-border; }
+  }
+
+  &__body {
+    @include flex(column, stretch, flex-start, $space-3);
+    padding: $space-5 $space-6;
+  }
+
+  &__label  { font-size: $font-size-sm; font-weight: 600; color: $color-text; }
+
+  &__input,
+  &__select {
+    padding: $space-2 $space-3;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    background: $color-bg;
+    color: $color-text;
+    width: 100%;
+    &:focus { outline: none; border-color: $color-primary; }
+  }
+
+  &__avatares {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-2;
+  }
+
+  &__avatar-btn {
+    @include button-base;
+    font-size: 1.4rem;
+    width: 44px; height: 44px;
+    border-radius: $radius-md;
+    border: 2px solid $color-border;
+    background: $color-bg;
+    @include flex(row, center, center);
+    &:hover { border-color: $color-primary; }
+    &--active { border-color: $color-primary; background: $color-primary-light; }
+  }
+
+  &__confirm-text { font-size: $font-size-sm; color: $color-text; line-height: 1.6; }
+
+  &__footer {
+    @include flex(row, center, flex-end, $space-3);
+    padding: $space-4 $space-6;
+    border-top: 1px solid $color-border;
+  }
+
+  &__btn-cancel {
+    @include button-base;
+    padding: $space-2 $space-4;
+    border-radius: $radius-md;
+    border: 1px solid $color-border;
+    background: $color-surface;
+    color: $color-text-muted;
+    font-size: $font-size-sm;
+    &:hover { background: $color-border; }
+  }
+
+  &__btn-save {
+    @include button-base;
+    padding: $space-2 $space-5;
+    border-radius: $radius-md;
+    background: $color-primary;
+    color: #fff;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    &:hover:not(:disabled) { background: $color-primary-dark; }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+
+  &__btn-delete {
+    @include button-base;
+    padding: $space-2 $space-5;
+    border-radius: $radius-md;
+    background: #dc2626;
+    color: #fff;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    &:hover { background: #b91c1c; }
+  }
+}

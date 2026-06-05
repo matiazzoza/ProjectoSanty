@@ -9,57 +9,10 @@ export const CATEGORIES = [
 ];
 
 export const STATUSES = [
-  { id: "pendiente",  label: "Pendiente",   color: "#f59e0b" },
-  { id: "en_proceso", label: "En proceso",  color: "#3b82f6" },
-  { id: "resuelto",  label: "Resuelto",     color: "#22c55e" },
-  { id: "duplicado", label: "Duplicado",    color: "#94a3b8" },
-];
-
-export const INITIAL_REPORTS = [
-  {
-    id: "r1",
-    title: "Bache enorme en Av. San Martín",
-    description: "Hay un bache de aproximadamente 1 metro de diámetro frente al número 450. Varios autos ya lo esquivaron por poco.",
-    category: "baches",
-    status: "en_proceso",
-    location: { lat: -26.1775, lng: -58.1781, address: "Av. San Martín 450" },
-    photo: null,
-    authorId: "u2",
-    authorName: "Juan García",
-    createdAt: "2026-03-15T10:00:00.000Z",
-    votes: ["u3", "u4"],
-    comments: [
-      { id: "c1", authorId: "u3", authorName: "María López", text: "Confirmo, casi me rompo la suspensión ahí ayer.", createdAt: "2026-03-16T08:00:00.000Z" },
-    ],
-  },
-  {
-    id: "r2",
-    title: "Luminaria apagada — Calle Mitre",
-    description: "La luminaria de Mitre y Belgrano está apagada hace más de dos semanas. El sector queda completamente oscuro de noche.",
-    category: "iluminacion",
-    status: "pendiente",
-    location: { lat: -26.1790, lng: -58.1760, address: "Mitre y Belgrano" },
-    photo: null,
-    authorId: "u3",
-    authorName: "María López",
-    createdAt: "2026-03-20T14:30:00.000Z",
-    votes: ["u1", "u2"],
-    comments: [],
-  },
-  {
-    id: "r3",
-    title: "Contenedores desbordados en plaza",
-    description: "Los contenedores de la plaza principal llevan días sin vaciarse. El olor es insoportable y hay bolsas tiradas alrededor.",
-    category: "basura",
-    status: "resuelto",
-    location: { lat: -26.1800, lng: -58.1800, address: "Plaza San Martín" },
-    photo: null,
-    authorId: "u4",
-    authorName: "Carlos Díaz",
-    createdAt: "2026-03-25T09:00:00.000Z",
-    votes: ["u1", "u2", "u3"],
-    comments: [
-      { id: "c2", authorId: "u1", authorName: "Admin Municipal", text: "El servicio de recolección ya fue notificado. Se resolvió el 28/03.", createdAt: "2026-03-28T11:00:00.000Z" },
-    ],
-  },
+  { id: "pendiente",       label: "Pendiente",        color: "#f59e0b" },
+  { id: "en_verificacion", label: "En verificación",  color: "#8b5cf6" },
+  { id: "en_proceso",      label: "En proceso",       color: "#3b82f6" },
+  { id: "resuelto",        label: "Resuelto",         color: "#22c55e" },
+  { id: "duplicado",       label: "Duplicado",        color: "#94a3b8" },
+  { id: "cancelado",       label: "Cancelado",        color: "#dc2626" },
 ];

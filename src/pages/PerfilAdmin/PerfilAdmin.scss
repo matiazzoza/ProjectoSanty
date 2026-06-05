@@ -1,0 +1,369 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.perfil-admin {
+  @include container;
+  padding-top: $space-8;
+  padding-bottom: $space-10;
+
+  &__loading {
+    text-align: center;
+    padding: $space-10;
+    color: $color-text-muted;
+  }
+
+  &__container {
+    max-width: 780px;
+    margin: 0 auto;
+    @include flex(column, stretch, flex-start, $space-6);
+  }
+
+  // Card principal
+  &__card {
+    @include card;
+    padding: $space-8;
+    @include flex(column, center, flex-start, $space-5);
+    text-align: center;
+  }
+
+  &__info {
+    @include flex(column, center, flex-start, $space-1);
+  }
+
+  &__name-row {
+    @include flex(row, center, center, $space-2);
+  }
+
+  &__pwd-btn {
+    background: transparent;
+    border: none;
+    padding: $space-1;
+    font-size: $font-size-base;
+    color: $color-text-muted;
+    cursor: pointer;
+    border-radius: $radius-sm;
+    line-height: 1;
+    transition: color 0.15s;
+
+    &:hover { color: $color-primary; }
+  }
+
+  &__modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+
+  &__modal-pwd {
+    @include card;
+    padding: $space-6 $space-8;
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+  }
+
+  &__modal-pwd-cerrar {
+    background: none;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    padding: $space-2 $space-4;
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    cursor: pointer;
+    align-self: flex-end;
+
+    &:hover { border-color: $color-text-muted; }
+  }
+
+  &__name {
+    font-size: $font-size-2xl;
+    font-weight: 800;
+    color: $color-text;
+    margin: 0;
+  }
+
+  &__username {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    margin: 0;
+  }
+
+  &__rol {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-primary;
+    background: rgba($color-primary, 0.08);
+    padding: 2px $space-3;
+    border-radius: $radius-full;
+  }
+
+  // Stats
+  &__stats {
+    @include flex(row, center, center);
+    flex-wrap: wrap;
+    gap: $space-4;
+    width: 100%;
+    padding-top: $space-4;
+    border-top: 1px solid $color-border;
+  }
+
+  &__stat {
+    @include flex(column, center, center, $space-1);
+    text-align: center;
+    min-width: 100px;
+
+    &--btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-radius: $radius-md;
+      padding: $space-2;
+      transition: background $transition-fast;
+      &:hover { background: $color-surface-raised; }
+    }
+
+    &--active {
+      background: rgba($color-primary, 0.08);
+      .perfil-admin__stat-value { color: $color-primary; }
+    }
+  }
+
+  &__stat-hint {
+    font-size: 0.65rem;
+    color: $color-text-muted;
+    opacity: 0.7;
+    margin-top: 2px;
+  }
+
+  &__stat-value {
+    font-size: $font-size-2xl;
+    font-weight: 800;
+    color: $color-primary;
+  }
+
+  &__stat-label {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    white-space: nowrap;
+  }
+
+  &__stat-divider {
+    width: 1px;
+    height: 36px;
+    background: $color-border;
+    @media (max-width: 480px) { display: none; }
+  }
+
+  // Sección
+  &__section {
+    @include flex(column, stretch, flex-start, $space-3);
+  }
+
+  &__section-title {
+    font-size: $font-size-lg;
+    font-weight: 700;
+    color: $color-text;
+    margin: 0;
+  }
+
+  &__empty {
+    @include card;
+    padding: $space-6;
+    text-align: center;
+    color: $color-text-muted;
+    font-size: $font-size-sm;
+  }
+
+  &__list {
+    @include flex(column, stretch, flex-start, $space-3);
+  }
+
+  // Item de actividad
+  &__item {
+    @include card;
+    @include flex(row, center, space-between, $space-4);
+    padding: $space-4;
+    flex-wrap: wrap;
+  }
+
+  &__item-left {
+    @include flex(column, flex-start, flex-start, $space-1);
+    flex: 1;
+  }
+
+  &__item-cat {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-text-muted;
+  }
+
+  &__item-title {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text;
+    margin: 0;
+  }
+
+  &__item-cambio {
+    @include flex(row, center, flex-start, $space-2);
+    margin: 0;
+  }
+
+  &__estado {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    padding: 2px $space-2;
+    border-radius: $radius-full;
+
+    &--anterior  { background: $color-surface-raised; color: $color-text-muted; }
+    &--nuevo     { background: rgba($color-primary, 0.1); color: $color-primary; }
+    &--volvio    { background: #fffbeb; color: #d97706; }
+  }
+
+  &__flecha {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__item-right {
+    @include flex(column, flex-end, center, $space-1);
+    flex-shrink: 0;
+  }
+
+  &__item-fecha {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__item-ver {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-primary;
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+
+  // Detalle expandible de métricas
+  &__detalle {
+    width: 100%;
+    border-top: 1px solid $color-border;
+    padding-top: $space-4;
+    @include flex(column, stretch, flex-start, $space-3);
+  }
+
+  &__detalle-titulo {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    color: $color-text;
+    margin: 0 0 $space-1;
+  }
+
+  &__detalle-vacio {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    font-style: italic;
+  }
+
+  &__detalle-item {
+    @include flex(row, center, space-between, $space-3);
+    padding: $space-3;
+    background: $color-surface-raised;
+    border-radius: $radius-md;
+    flex-wrap: wrap;
+  }
+
+  &__detalle-item-left {
+    @include flex(column, flex-start, flex-start, 2px);
+    flex: 1;
+  }
+
+  &__detalle-item-right {
+    @include flex(row, center, flex-end, $space-2);
+    flex-shrink: 0;
+  }
+
+  &__detalle-item-title {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  &__detalle-item-meta {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+  }
+
+  &__reasig-badge {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    color: #d97706;
+    background: #fffbeb;
+    padding: 2px $space-2;
+    border-radius: $radius-full;
+  }
+
+  &__detalle-novedad {
+    @include flex(column, flex-start, flex-start, $space-2);
+    padding: $space-3;
+    background: $color-surface-raised;
+    border-radius: $radius-md;
+    border-left: 3px solid $color-border;
+  }
+
+  &__detalle-novedad-header {
+    @include flex(row, center, space-between, $space-3);
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  &__novedad-tipo {
+    font-size: $font-size-xs;
+    font-weight: 700;
+    padding: 2px $space-2;
+    border-radius: $radius-full;
+    &--bloqueante  { background: #fef2f2; color: #dc2626; }
+    &--informativa { background: #fffbeb; color: #d97706; }
+  }
+
+  &__detalle-novedad-reporte {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-text-muted;
+    margin: 0;
+  }
+
+  &__detalle-novedad-desc {
+    font-size: $font-size-xs;
+    color: $color-text-muted;
+    font-style: italic;
+    margin: 0;
+  }
+
+  &__detalle-novedad-resp {
+    font-size: $font-size-xs;
+    color: $color-text;
+    margin: 0;
+  }
+
+  // Back
+  &__back { padding-top: $space-2; }
+
+  &__back-link {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    text-decoration: none;
+    font-weight: 600;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    &:hover { color: $color-primary; }
+  }
+
+}

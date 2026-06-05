@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
@@ -8,7 +9,11 @@ const seguimientoRoutes = require('./routes/seguimientos');
 const asignacionRoutes = require('./routes/asignaciones');
 const novedadRoutes = require('./routes/novedades');
 const avanceRoutes = require('./routes/avances');
+const usuarioRoutes = require('./routes/usuarios');
+const superAdminRoutes = require('./routes/superAdmin');
+const mensajesAdminRoutes = require('./routes/mensajesAdmin');
 const abandonoJob = require('./jobs/abandonoJob');
+const vencimientoJob = require('./jobs/vencimientoJob');
 
 const app = express();
 app.use(cors());
@@ -23,9 +28,13 @@ app.use('/api/seguimientos', seguimientoRoutes);
 app.use('/api/asignaciones', asignacionRoutes);
 app.use('/api/novedades', novedadRoutes);
 app.use('/api/avances', avanceRoutes);
+app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/super-admin', superAdminRoutes);
+app.use('/api/mensajes-admin', mensajesAdminRoutes);
 
 // ─── Jobs ─────────────────────────────────────────────────────────────────────
 abandonoJob.iniciar();
+vencimientoJob.iniciar();
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 const PORT = 3001;

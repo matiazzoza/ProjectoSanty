@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../controllers/AuthController";
+import UserAvatar from "../UserAvatar/UserAvatar";
 import { useTheme } from "../../controllers/ThemeController";
 import { getAll as getNotifications, marcarLeida, crearAlerta } from "../../models/notificacionModel";
 import { getAll as getBarrios } from "../../models/barrioModel";
@@ -24,7 +25,8 @@ export default function Header() {
   const { dark, toggleTheme } = useTheme();
   const { addToast } = useToast();
   const navigate = useNavigate();
-  const isAdmin = currentUser?.role === "admin";
+  const isAdmin = currentUser?.role === "admin" || currentUser?.role === "superadmin";
+  const isSuperAdmin = currentUser?.role === "superadmin";
 
   const [notifications, setNotifications] = useState([]);
   const [showNotif, setShowNotif] = useState(false);
@@ -146,7 +148,7 @@ export default function Header() {
     <>
     <header className="header">
       <div className="header__inner">
-        <Link to={isAdmin ? "/dashboard-admin" : currentUser?.role === "empleado" ? "/panel-empleado" : "/"} className="header__brand">
+        <Link to={isSuperAdmin ? "/super-admin" : isAdmin ? "/dashboard-admin" : currentUser?.role === "empleado" ? "/panel-empleado" : "/"} className="header__brand">
           <span className="header__brand-icon">🏙️</span>
           <span className="header__brand-name">ReportaMuni</span>
         </Link>
@@ -243,13 +245,8 @@ export default function Header() {
               )}
             </div>
 
-            <Link to={currentUser?.role === "empleado" ? "/perfil-empleado" : "/perfil-vecino"} className="header__user">
-              <div className="header__avatar">
-                {currentUser.photo
-                  ? <img src={currentUser.photo} alt="perfil" />
-                  : currentUser.avatar
-                }
-              </div>
+            <Link to={currentUser?.role === "empleado" ? "/perfil-empleado" : (currentUser?.role === "admin" || currentUser?.role === "superadmin") ? "/perfil-admin" : "/perfil-vecino"} className="header__user">
+              <UserAvatar avatar={currentUser.avatar} size="sm" />
               <span className="header__username">{currentUser.name}</span>
             </Link>
 

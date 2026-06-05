@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { authMiddleware } = require('../middleware/auth');
+const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 const reporteController = require('../controllers/reporteController');
 const votoController = require('../controllers/votoController');
 const comentarioController = require('../controllers/comentarioController');
@@ -14,6 +14,10 @@ router.get('/',    reporteController.getAll);
 router.get('/:id', reporteController.getOne);
 router.post('/',   reporteController.create);
 router.put('/:id', reporteController.update);
+router.put('/:id/cancelar',            adminMiddleware, reporteController.cancelarReporte);
+router.put('/:id/enviar-verificacion', adminMiddleware, reporteController.enviarVerificacion);
+router.put('/:id/verificar',                           reporteController.verificarReporte);
+router.get('/mis-verificaciones',                      reporteController.getMisVerificaciones);
 router.delete('/:id', reporteController.remove);
 
 router.post('/:id/vote', votoController.toggle);

@@ -48,6 +48,25 @@
     @include flex(column, center, flex-start, $space-1);
   }
 
+  &__name-row {
+    @include flex(row, center, center, $space-2);
+  }
+
+  &__esp-badges {
+    @include flex(row, center, center, $space-1);
+    flex-wrap: wrap;
+    margin-top: $space-1;
+  }
+
+  &__esp-badge {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-primary;
+    background: rgba($color-primary, 0.08);
+    padding: 2px $space-2;
+    border-radius: $radius-full;
+  }
+
   &__name {
     font-size: $font-size-2xl;
     font-weight: 800;
@@ -304,6 +323,109 @@
     font-style: italic;
   }
 
+  // Reporte activo (en curso)
+  &__activo {
+    @include card;
+    @include flex(row, center, space-between, $space-4);
+    padding: $space-4;
+    flex-wrap: wrap;
+
+    &-left {
+      @include flex(column, flex-start, flex-start, $space-1);
+      flex: 1;
+    }
+
+    &-top {
+      @include flex(row, center, flex-start, $space-2);
+    }
+
+    &-rol {
+      font-size: $font-size-xs;
+      font-weight: 600;
+      color: $color-text-muted;
+    }
+
+    &-avance {
+      @include flex(row, center, flex-start, $space-2);
+      font-size: $font-size-xs;
+      color: $color-text-muted;
+      margin-top: 2px;
+    }
+
+    &-pct {
+      font-size: $font-size-xs;
+      font-weight: 700;
+      color: $color-primary;
+      background: rgba($color-primary, 0.1);
+      padding: 1px 6px;
+      border-radius: $radius-full;
+    }
+  }
+
+  &__item--historial { opacity: 0.8; }
+
+  &__historial-rol {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-text-muted;
+  }
+
+  &__historial-badge {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: #d97706;
+    background: #fffbeb;
+    padding: 2px $space-2;
+    border-radius: $radius-full;
+  }
+
+  &__pwd-btn {
+    background: transparent;
+    border: none;
+    padding: $space-1;
+    font-size: $font-size-base;
+    color: $color-text-muted;
+    cursor: pointer;
+    border-radius: $radius-sm;
+    line-height: 1;
+    transition: color 0.15s;
+
+    &:hover { color: $color-primary; }
+  }
+
+  &__modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+
+  &__modal-pwd {
+    @include card;
+    padding: $space-6 $space-8;
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+  }
+
+  &__modal-pwd-cerrar {
+    background: none;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    padding: $space-2 $space-4;
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    cursor: pointer;
+    align-self: flex-end;
+
+    &:hover { border-color: $color-text-muted; }
+  }
+
   // Back
   &__back {
     padding-top: $space-2;
@@ -314,6 +436,10 @@
     color: $color-text-muted;
     text-decoration: none;
     font-weight: 600;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
     &:hover { color: $color-primary; }
   }
 }

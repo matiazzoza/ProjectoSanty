@@ -1,0 +1,64 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.cambiar-pwd {
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: 700;
+    color: $color-text;
+    margin-bottom: $space-4;
+  }
+
+  &__form {
+    @include flex(column, stretch, flex-start, $space-4);
+    max-width: 400px;
+  }
+
+  &__field {
+    @include flex(column, stretch, flex-start, $space-1);
+  }
+
+  &__label {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text-muted;
+  }
+
+  &__input-wrap {
+    position: relative;
+  }
+
+  &__input {
+    @include input-base;
+    width: 100%;
+    padding-right: 4.5rem;
+  }
+
+  &__toggle {
+    @include button-base;
+    position: absolute;
+    right: $space-3;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    color: $color-text-light;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    padding: $space-1 $space-2;
+
+    &:hover { color: $color-primary; }
+  }
+
+  &__submit {
+    @include button-base;
+    padding: $space-3 $space-5;
+    background: $color-primary;
+    color: white;
+    font-weight: 600;
+    font-size: $font-size-sm;
+    align-self: flex-start;
+
+    &:hover:not(:disabled) { background: $color-primary-dark; }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+}

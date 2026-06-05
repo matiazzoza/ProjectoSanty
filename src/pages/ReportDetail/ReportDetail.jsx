@@ -6,11 +6,13 @@ import { useToast } from "../../controllers/ToastController";
 import { CATEGORIES, STATUSES } from "../../data/mockReports";
 import MapPicker from "../../components/MapPicker/MapPicker";
 import { toggle as toggleSeguir, getByUsuario as getSeguidos } from "../../models/seguimientoModel";
-import { getHistorial, getById as getReporteById } from "../../models/reporteModel";
-import { getEmpleados, asignar, getAsignacionesReporte, validarCierre, rechazarCierre } from "../../models/asignacionModel";
+import { getHistorial, getById as getReporteById, cancelarReporte, enviarVerificacion } from "../../models/reporteModel";
+import { getEmpleados, asignar, getAsignacionesReporte, getHistorialAsignacionesReporte, validarCierre, rechazarCierre, resolverPropuesta } from "../../models/asignacionModel";
 import { getNovedades, responderNovedad } from "../../models/novedadModel";
 import { getAvances } from "../../models/avanceModel";
 import { getPrioridad } from "../../utils/prioridad";
+import { ESPECIALIDADES, CATEGORIA_ESPECIALIDAD } from "../../data/especialidades";
+import UserAvatar from "../../components/UserAvatar/UserAvatar";
 import "./ReportDetail.scss";
 
 function formatDate(iso) {
@@ -40,10 +42,22 @@ export default function ReportDetail() {
   // Asignaciones (admin)
   const [empleados, setEmpleados] = useState([]);
   const [asignaciones, setAsignaciones] = useState([]);
+  const [historialEquipos, setHistorialEquipos] = useState([]);
+  const [showHistorialEquipos, setShowHistorialEquipos] = useState(false);
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState("");
+  const [miembrosSeleccionados, setMiembrosSeleccionados] = useState([]);
   const [prioridadSeleccionada, setPrioridadSeleccionada] = useState("media");
   const [fechaLimite, setFechaLimite] = useState("");
   const [loadingAsignar, setLoadingAsignar] = useState(false);
+
+  useEffect(() => {
+    const lider = asignaciones.find((a) => a.es_lider && a.aprobado === "aprobado");
+    const miembros = asignaciones.filter((a) => !a.es_lider && a.aprobado === "aprobado").map((a) => a.empleado_id);
+    setEmpleadoSeleccionado(lider?.empleado_id ?? "");
+    setPrioridadSeleccionada(lider?.prioridad ?? "media");
+    setFechaLimite(lider?.fechaLimite ? lider.fechaLimite.slice(0, 10) : "");
+    setMiembrosSeleccionados(miembros);
+  }, [asignaciones]);
   const [motivoRechazo, setMotivoRechazo] = useState("");
 
   // Estado fresco desde la API (para validaciones de permisos)
@@ -56,13 +70,27 @@ export default function ReportDetail() {
   // Avances
   const [avances, setAvances] = useState([]);
 
+  const [expandidosEquipo, setExpandidosEquipo] = useState({});
+
+  const [modalCancelar, setModalCancelar] = useState(false);
+  const [motivoCancelacion, setMotivoCancelacion] = useState("");
+  const [loadingCancelar, setLoadingCancelar] = useState(false);
+  const [cancelMotivo, setCancelMotivo] = useState(null);
+
+  const [modalVerificar, setModalVerificar] = useState(false);
+  const [verificadorSeleccionado, setVerificadorSeleccionado] = useState("");
+  const [loadingVerificar, setLoadingVerificar] = useState(false);
+
   const report = getReport(id);
 
   useEffect(() => {
     if (!currentUser || !report) return;
 
     // Obtener estado fresco del reporte desde la API
-    getReporteById(report.id).then((r) => setFreshStatus(r.status)).catch(() => {});
+    getReporteById(report.id).then((r) => {
+      setFreshStatus(r.status);
+      if (r.motivoCancelacion) setCancelMotivo(r.motivoCancelacion);
+    }).catch(() => {});
 
     getSeguidos(currentUser.id)
       .then((ids) => setSiguiendo(ids.includes(report.id)))
@@ -73,9 +101,10 @@ export default function ReportDetail() {
 
     getAvances(report.id).then(setAvances).catch(() => {});
 
-    if (currentUser?.role === "admin") {
+    if (currentUser?.role === "admin" || currentUser?.role === "superadmin") {
       getEmpleados().then(setEmpleados).catch(() => {});
       getAsignacionesReporte(report.id).then(setAsignaciones).catch(() => {});
+      getHistorialAsignacionesReporte(report.id).then(setHistorialEquipos).catch(() => {});
       getNovedades(report.id).then(setNovedades).catch(() => {});
     }
   }, [currentUser?.id, report?.id]);
@@ -94,7 +123,7 @@ export default function ReportDetail() {
   const prioridad = getPrioridad(report.votes);
   const hasVoted = currentUser ? report.votes.includes(currentUser.id) : false;
   const isOwner = currentUser?.id === report.authorId;
-  const isAdmin = currentUser?.role === "admin";
+  const isAdmin = currentUser?.role === "admin" || currentUser?.role === "superadmin";
   const canChangeStatus = isAdmin;
   const canVote = currentUser && report.status === "pendiente";
   // Esperar el estado fresco antes de mostrar acciones destructivas
@@ -169,14 +198,32 @@ export default function ReportDetail() {
     if (!empleadoSeleccionado) return;
     setLoadingAsignar(true);
     try {
-      await asignar(report.id, empleadoSeleccionado, prioridadSeleccionada, fechaLimite || null);
+      await asignar(report.id, empleadoSeleccionado, prioridadSeleccionada, fechaLimite || null, miembrosSeleccionados);
       const nuevas = await getAsignacionesReporte(report.id);
       setAsignaciones(nuevas);
-      addToast("Empleado asignado correctamente", "success");
+      setMiembrosSeleccionados([]);
+      addToast("Equipo asignado correctamente", "success");
     } catch (err) {
       addToast(err.message, "error");
     } finally {
       setLoadingAsignar(false);
+    }
+  }
+
+  function toggleMiembro(id) {
+    setMiembrosSeleccionados((prev) =>
+      prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]
+    );
+  }
+
+  async function handleResolverPropuesta(empleadoId, accion) {
+    try {
+      await resolverPropuesta(report.id, empleadoId, accion);
+      const nuevas = await getAsignacionesReporte(report.id);
+      setAsignaciones(nuevas);
+      addToast(accion === 'aprobar' ? 'Propuesta aprobada' : 'Propuesta rechazada', 'success');
+    } catch (err) {
+      addToast(err.message, 'error');
     }
   }
 
@@ -215,6 +262,39 @@ export default function ReportDetail() {
     }
   }
 
+  async function handleEnviarVerificacion() {
+    if (!verificadorSeleccionado) return;
+    setLoadingVerificar(true);
+    try {
+      await enviarVerificacion(report.id, verificadorSeleccionado);
+      updateStatus(report.id, "en_verificacion");
+      addToast("Reporte enviado a verificación. Se notificó al empleado.", "success");
+      setModalVerificar(false);
+      setVerificadorSeleccionado("");
+    } catch (err) {
+      addToast(err.message, "error");
+    } finally {
+      setLoadingVerificar(false);
+    }
+  }
+
+  async function handleCancelar() {
+    if (!motivoCancelacion) return;
+    setLoadingCancelar(true);
+    try {
+      await cancelarReporte(report.id, motivoCancelacion);
+      updateStatus(report.id, "cancelado");
+      setCancelMotivo(motivoCancelacion);
+      addToast("Reporte cancelado. Se notificó al vecino.", "success");
+      setModalCancelar(false);
+      setMotivoCancelacion("");
+    } catch (err) {
+      addToast(err.message, "error");
+    } finally {
+      setLoadingCancelar(false);
+    }
+  }
+
   async function handleToggleSeguir() {
     if (!currentUser || loadingSeguir) return;
     setLoadingSeguir(true);
@@ -235,12 +315,6 @@ export default function ReportDetail() {
         <button className="report-detail__back" onClick={() => navigate(-1)}>
           ← Volver
         </button>
-
-        {report.photo && (
-          <div className="report-detail__photo">
-            <img src={report.photo} alt={report.title} />
-          </div>
-        )}
 
         <div className="report-detail__card">
           {/* Meta: categoría + estado */}
@@ -265,6 +339,39 @@ export default function ReportDetail() {
               </div>
             )}
           </div>
+
+          {isAdmin && report.verificacionResultado && (
+            <div className={`report-detail__verificacion-banner report-detail__verificacion-banner--${report.verificacionResultado}`}>
+              <span className="report-detail__verificacion-titulo">
+                {report.verificacionResultado === 'confirma' ? '✅ Verificado: problema confirmado' : '⚠️ Verificado: problema no encontrado'}
+              </span>
+              {report.verificacionNota && (
+                <span className="report-detail__verificacion-nota">{report.verificacionNota}</span>
+              )}
+              {report.fotoVerificacion && (
+                <img src={report.fotoVerificacion} alt="foto verificación" className="report-detail__verificacion-foto" />
+              )}
+            </div>
+          )}
+
+          {report.status === "cancelado" && (() => {
+            const MOTIVOS = {
+              fuera_jurisdiccion:   'Fuera de jurisdicción municipal',
+              problema_inexistente: 'El problema ya no existe',
+              acceso_denegado:      'Acceso al lugar denegado',
+              sin_recursos:         'Sin recursos disponibles',
+              duplicado:            'Reporte duplicado',
+            };
+            const motivo = cancelMotivo || report.motivoCancelacion;
+            return (
+              <div className="report-detail__cancelado-banner">
+                <span className="report-detail__cancelado-titulo">❌ Reporte cancelado</span>
+                {motivo && (
+                  <span className="report-detail__cancelado-motivo">Motivo: {MOTIVOS[motivo] ?? motivo}</span>
+                )}
+              </div>
+            );
+          })()}
 
           {prioridad.label && (
             <span className="report-detail__prioridad-badge" style={{ color: prioridad.color, background: prioridad.bg, borderColor: prioridad.border }}>
@@ -380,6 +487,18 @@ export default function ReportDetail() {
                 </button>
               )}
 
+              {isAdmin && report.status === "pendiente" && (
+                <button className="report-detail__verificar-btn" onClick={() => setModalVerificar(true)}>
+                  🔍 Enviar a verificación
+                </button>
+              )}
+
+              {isAdmin && report.status !== "cancelado" && report.status !== "resuelto" && (
+                <button className="report-detail__cancel-btn" onClick={() => setModalCancelar(true)}>
+                  ❌ Cancelar reporte
+                </button>
+              )}
+
               {isOwner && isPendiente && (
                 <button className="report-detail__delete-btn" onClick={handleDelete}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -392,6 +511,16 @@ export default function ReportDetail() {
             </div>
           </div>
         </div>
+
+        {report.photo && (
+          <div className="report-detail__photo">
+            <img
+              src={report.photo}
+              alt={report.title}
+              onError={(e) => { e.target.parentElement.style.display = 'none'; }}
+            />
+          </div>
+        )}
 
         {/* Historial simplificado — visible para todos */}
         <div className="report-detail__historial">
@@ -514,62 +643,240 @@ export default function ReportDetail() {
         {/* Panel de asignación (solo admin) */}
         {isAdmin && (
           <div className="report-detail__asignacion">
-            <h2 className="report-detail__comments-title">Asignación de empleado</h2>
+            <h2 className="report-detail__comments-title">Equipo asignado</h2>
 
-            {/* Empleado asignado actual */}
-            {asignaciones.length > 0 ? (
-              <div className="asignacion-actual">
-                {asignaciones.map((a) => (
-                  <div key={a.id} className="asignacion-actual__item">
-                    <div className="asignacion-actual__avatar">{a.empleado_avatar}</div>
-                    <div>
-                      <p className="asignacion-actual__nombre">{a.empleado_nombre}</p>
-                      <p className="asignacion-actual__fecha">Asignado el {formatDateShort(a.asignado_en)}</p>
+            {/* Formulario para asignar/reasignar */}
+            {report.status !== "resuelto" && report.status !== "cancelado" && (
+              <div className="asignacion-form">
+                <div className="asignacion-form__row">
+                  <div className="asignacion-form__field">
+                    <span className="asignacion-form__field-label">👤 Líder</span>
+                    <select
+                      className="asignacion-form__select"
+                      value={empleadoSeleccionado}
+                      onChange={(e) => {
+                        setEmpleadoSeleccionado(e.target.value);
+                        setMiembrosSeleccionados((prev) => prev.filter((m) => m !== e.target.value));
+                      }}
+                    >
+                      <option value="">Seleccioná el líder...</option>
+                      {[...empleados]
+                        .sort((a, b) => {
+                          const esp = CATEGORIA_ESPECIALIDAD[report.category];
+                          const aMatch = esp && a.especialidades?.includes(esp);
+                          const bMatch = esp && b.especialidades?.includes(esp);
+                          if (aMatch && !bMatch) return -1;
+                          if (!aMatch && bMatch) return 1;
+                          return 0;
+                        })
+                        .map((e) => {
+                          const esp = CATEGORIA_ESPECIALIDAD[report.category];
+                          const match = esp && e.especialidades?.includes(esp);
+                          const espLabels = e.especialidades?.map((id) => ESPECIALIDADES.find((x) => x.id === id)?.icon).filter(Boolean).join(' ') || '';
+                          return (
+                            <option key={e.id} value={e.id}>
+                              {match ? '⭐ ' : ''}{e.name} (@{e.username}){espLabels ? ` — ${espLabels}` : ''}
+                            </option>
+                          );
+                        })}
+                    </select>
+                  </div>
+                  <div className="asignacion-form__field">
+                    <span className="asignacion-form__field-label">⚡ Prioridad</span>
+                    <select
+                      className="asignacion-form__select asignacion-form__select--prioridad"
+                      value={prioridadSeleccionada}
+                      onChange={(e) => setPrioridadSeleccionada(e.target.value)}
+                    >
+                      <option value="alta">🔺 Alta</option>
+                      <option value="media">🔸 Media</option>
+                      <option value="baja">🔹 Baja</option>
+                    </select>
+                  </div>
+                  <div className="asignacion-form__field">
+                    <span className="asignacion-form__field-label">📅 Fecha límite <span>(opcional)</span></span>
+                    <input
+                      type="date"
+                      className="asignacion-form__date"
+                      value={fechaLimite}
+                      onChange={(e) => setFechaLimite(e.target.value)}
+                      min={new Date().toISOString().slice(0, 10)}
+                    />
+                  </div>
+                </div>
+
+                {/* Selección de miembros */}
+                {empleadoSeleccionado && (
+                  <div className="asignacion-form__miembros">
+                    <p className="asignacion-form__miembros-label">👥 Agregar miembros al equipo <span>(opcional)</span></p>
+                    <div className="asignacion-form__miembros-list">
+                      {[...empleados]
+                        .filter((e) => e.id !== empleadoSeleccionado)
+                        .sort((a, b) => {
+                          const esp = CATEGORIA_ESPECIALIDAD[report.category];
+                          const aMatch = esp && a.especialidades?.includes(esp);
+                          const bMatch = esp && b.especialidades?.includes(esp);
+                          if (aMatch && !bMatch) return -1;
+                          if (!aMatch && bMatch) return 1;
+                          return 0;
+                        })
+                        .map((e) => {
+                          const esp = CATEGORIA_ESPECIALIDAD[report.category];
+                          const match = esp && e.especialidades?.includes(esp);
+                          return (
+                            <label key={e.id} className={`asignacion-form__miembro-check ${match ? "asignacion-form__miembro-check--match" : ""}`}>
+                              <input
+                                type="checkbox"
+                                checked={miembrosSeleccionados.includes(e.id)}
+                                onChange={() => toggleMiembro(e.id)}
+                              />
+                              <UserAvatar avatar={e.avatar} size="xs" />
+                              <span>{e.name}</span>
+                              {e.especialidades?.length > 0 && (
+                                <span className="asignacion-form__miembro-esps">
+                                  {e.especialidades.map((id) => ESPECIALIDADES.find((x) => x.id === id)?.icon).filter(Boolean).join(' ')}
+                                </span>
+                              )}
+                            </label>
+                          );
+                        })}
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p className="report-detail__no-comments">Sin empleado asignado aún.</p>
-            )}
+                )}
 
-            {/* Selector para asignar/reasignar */}
-            {report.status !== "resuelto" && (
-              <div className="asignacion-form">
-                <select
-                  className="asignacion-form__select"
-                  value={empleadoSeleccionado}
-                  onChange={(e) => setEmpleadoSeleccionado(e.target.value)}
-                >
-                  <option value="">Seleccioná un empleado...</option>
-                  {empleados.map((e) => (
-                    <option key={e.id} value={e.id}>{e.name} (@{e.username})</option>
-                  ))}
-                </select>
-                <select
-                  className="asignacion-form__select asignacion-form__select--prioridad"
-                  value={prioridadSeleccionada}
-                  onChange={(e) => setPrioridadSeleccionada(e.target.value)}
-                >
-                  <option value="alta">🔺 Prioridad alta</option>
-                  <option value="media">🔸 Prioridad media</option>
-                  <option value="baja">🔹 Prioridad baja</option>
-                </select>
-                <input
-                  type="date"
-                  className="asignacion-form__date"
-                  value={fechaLimite}
-                  onChange={(e) => setFechaLimite(e.target.value)}
-                  min={new Date().toISOString().slice(0, 10)}
-                  title="Fecha límite (opcional)"
-                />
                 <button
                   className="asignacion-form__btn"
                   onClick={handleAsignar}
                   disabled={!empleadoSeleccionado || loadingAsignar}
                 >
-                  {asignaciones.length > 0 ? "Reasignar" : "Asignar"}
+                  {asignaciones.length > 0 ? "Reasignar equipo" : "Asignar equipo"}
                 </button>
+              </div>
+            )}
+
+            {/* Equipo actual */}
+            {asignaciones.length > 0 && (() => {
+              const matchEsp = CATEGORIA_ESPECIALIDAD[report?.category] ?? null;
+              return (
+              <div className="asignacion-actual">
+                {asignaciones.filter((a) => a.aprobado === 'aprobado').map((a) => {
+                  const isExp = !!expandidosEquipo[a.empleado_id];
+                  const espObj = matchEsp ? ESPECIALIDADES.find((x) => x.id === matchEsp) : null;
+                  const tieneEsps = a.especialidades?.length > 0;
+                  return (
+                    <div
+                      key={a.id}
+                      className="asignacion-actual__item"
+                      onClick={() => navigate(`/perfil-empleado/${a.empleado_id}`)}
+                    >
+                      <div className="asignacion-actual__row">
+                        <UserAvatar avatar={a.empleado_avatar} size="sm" />
+                        <div className="asignacion-actual__info">
+                          <p className="asignacion-actual__nombre">{a.empleado_nombre}</p>
+                          <span className={`asignacion-actual__rol ${a.es_lider ? "asignacion-actual__rol--lider" : "asignacion-actual__rol--miembro"}`}>
+                            {a.es_lider ? "👑 Líder" : "👤 Miembro"}
+                          </span>
+                        </div>
+                        {!isExp && espObj && a.especialidades?.includes(matchEsp) && (
+                          <span className="asignacion-actual__esp-hint" title={espObj.label}>{espObj.icon}</span>
+                        )}
+                        {tieneEsps && (
+                          <button
+                            className="asignacion-actual__toggle"
+                            onClick={(e) => { e.stopPropagation(); setExpandidosEquipo((prev) => ({ ...prev, [a.empleado_id]: !prev[a.empleado_id] })); }}
+                            title={isExp ? "Ocultar especialidades" : "Ver especialidades"}
+                          >
+                            {isExp ? "▲" : "▼"}
+                          </button>
+                        )}
+                      </div>
+                      {isExp && (
+                        <div className="asignacion-actual__esps">
+                          {a.especialidades.map((espId) => {
+                            const esp = ESPECIALIDADES.find((x) => x.id === espId);
+                            return esp ? (
+                              <span
+                                key={espId}
+                                className={`asignacion-actual__esp-badge${espId === matchEsp ? " asignacion-actual__esp-badge--match" : ""}`}
+                              >
+                                {esp.icon} {esp.label}
+                              </span>
+                            ) : null;
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {asignaciones.some((a) => a.aprobado === 'pendiente' || a.aprobado === 'baja_pendiente') && (
+                  <div className="asignacion-propuestas">
+                    <p className="asignacion-propuestas__titulo">⏳ Propuestas del líder</p>
+                    {asignaciones.filter((a) => a.aprobado === 'pendiente' || a.aprobado === 'baja_pendiente').map((a) => (
+                      <div key={a.id} className={`asignacion-propuestas__item asignacion-propuestas__item--${a.aprobado === 'pendiente' ? 'agregar' : 'quitar'}`}>
+                        <UserAvatar avatar={a.empleado_avatar} size="sm" />
+                        <div className="asignacion-actual__info">
+                          <p className="asignacion-actual__nombre">{a.empleado_nombre}</p>
+                          <span className="asignacion-propuestas__tipo">
+                            {a.aprobado === 'pendiente' ? '➕ Propone agregar' : '➖ Propone quitar'}
+                          </span>
+                        </div>
+                        <div className="asignacion-propuestas__actions">
+                          <button className="asignacion-propuestas__btn asignacion-propuestas__btn--aprobar" onClick={() => handleResolverPropuesta(a.empleado_id, 'aprobar')}>
+                            ✅ Aprobar
+                          </button>
+                          <button className="asignacion-propuestas__btn asignacion-propuestas__btn--rechazar" onClick={() => handleResolverPropuesta(a.empleado_id, 'rechazar')}>
+                            ❌ Rechazar
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ); })()}
+
+            {/* Equipos anteriores */}
+            {historialEquipos.length > 0 && (
+              <div className="asignacion-historial">
+                <button
+                  className="asignacion-historial__toggle"
+                  onClick={() => setShowHistorialEquipos((v) => !v)}
+                >
+                  🕓 Equipos anteriores ({new Set(historialEquipos.map((h) => h.asignado_en.slice(0, 10))).size})
+                  <span>{showHistorialEquipos ? " ▲" : " ▼"}</span>
+                </button>
+                {showHistorialEquipos && (() => {
+                  const grupos = [];
+                  const vistas = new Set();
+                  historialEquipos.forEach((h) => {
+                    const dia = h.asignado_en.slice(0, 10);
+                    if (!vistas.has(dia)) { vistas.add(dia); grupos.push(dia); }
+                  });
+                  return grupos.map((dia) => {
+                    const miembros = historialEquipos.filter((h) => h.asignado_en.slice(0, 10) === dia);
+                    return (
+                      <div key={dia} className="asignacion-historial__grupo">
+                        <p className="asignacion-historial__fecha">
+                          Asignado el {new Date(dia).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })}
+                        </p>
+                        <div className="asignacion-historial__miembros">
+                          {miembros.map((h, i) => (
+                            <div key={i} className="asignacion-historial__item">
+                              <UserAvatar avatar={h.empleado_avatar} size="sm" />
+                              <div>
+                                <p className="asignacion-historial__nombre">{h.empleado_nombre}</p>
+                                <span className={`asignacion-historial__rol ${h.es_lider ? "asignacion-historial__rol--lider" : ""}`}>
+                                  {h.es_lider ? "👑 Líder" : "👤 Miembro"}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             )}
 
@@ -607,12 +914,10 @@ export default function ReportDetail() {
             <span className="report-detail__comments-count">{report.comments?.length ?? 0}</span>
           </h2>
 
-          {currentUser && (
+          {currentUser && currentUser.role !== "empleado" && (
             <form className="report-detail__comment-form" onSubmit={handleAddComment}>
               <div className="report-detail__comment-input-row">
-                <div className="report-detail__comment-avatar">
-                  {currentUser.avatar}
-                </div>
+                <UserAvatar avatar={currentUser.avatar} size="sm" />
                 <input
                   className="report-detail__comment-input"
                   placeholder="Escribí un comentario..."
@@ -643,7 +948,7 @@ export default function ReportDetail() {
                   <div className="comment__body">
                     <div className="comment__header">
                       <span className="comment__author">{comment.authorName}</span>
-                      {comment.esOficial && (
+                      {!!comment.esOficial && (
                         <span className="comment__badge-oficial">
                           🏛️ Respuesta oficial
                         </span>
@@ -668,6 +973,101 @@ export default function ReportDetail() {
         </div>
 
       </div>
+
+      {/* Modal: enviar a verificación */}
+      {modalVerificar && (
+        <div className="report-detail__modal-bg" onClick={(e) => e.target === e.currentTarget && setModalVerificar(false)}>
+          <div className="report-detail__modal-cancelar">
+            <h3 className="report-detail__modal-cancelar-titulo" style={{ color: "#8b5cf6" }}>🔍 Enviar a verificación</h3>
+            <p className="report-detail__modal-cancelar-desc">
+              Se asignará un empleado para constatar el problema en campo antes de asignar el equipo definitivo.
+            </p>
+            <div>
+              <label className="report-detail__verificar-label">Empleado verificador</label>
+              <select
+                className="report-detail__verificar-select"
+                value={verificadorSeleccionado}
+                onChange={(e) => setVerificadorSeleccionado(e.target.value)}
+              >
+                <option value="">Seleccioná un empleado...</option>
+                {empleados.map((e) => (
+                  <option key={e.id} value={e.id}>{e.name} (@{e.username})</option>
+                ))}
+              </select>
+            </div>
+            <div className="report-detail__cancelar-acciones">
+              <button
+                className="report-detail__cancelar-btn-volver"
+                onClick={() => { setModalVerificar(false); setVerificadorSeleccionado(""); }}
+              >
+                Volver
+              </button>
+              <button
+                className="report-detail__verificar-btn-confirmar"
+                onClick={handleEnviarVerificacion}
+                disabled={!verificadorSeleccionado || loadingVerificar}
+              >
+                {loadingVerificar ? "Enviando..." : "Confirmar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: cancelar reporte */}
+      {modalCancelar && (
+        <div className="report-detail__modal-bg" onClick={(e) => e.target === e.currentTarget && setModalCancelar(false)}>
+          <div className="report-detail__modal-cancelar">
+            <h3 className="report-detail__modal-cancelar-titulo">❌ Cancelar reporte</h3>
+            <p className="report-detail__modal-cancelar-desc">
+              Esta acción es definitiva. El vecino recibirá una notificación con el motivo.
+            </p>
+
+            <div className="report-detail__cancelar-opciones">
+              {[
+                { id: "fuera_jurisdiccion",   label: "Fuera de jurisdicción municipal", desc: "Le corresponde a otra entidad (empresa de agua, luz, provincia)" },
+                { id: "problema_inexistente", label: "El problema ya no existe",         desc: "Cuando llegaron, el inconveniente ya había desaparecido" },
+                { id: "acceso_denegado",      label: "Acceso al lugar denegado",         desc: "No se puede ingresar al lugar (propiedad privada, zona restringida)" },
+                { id: "sin_recursos",         label: "Sin recursos disponibles",         desc: "El municipio no cuenta con presupuesto o materiales en este momento" },
+                { id: "duplicado",            label: "Reporte duplicado",                desc: "Ya existe otro reporte para el mismo problema" },
+              ].map((op) => (
+                <label
+                  key={op.id}
+                  className={`report-detail__cancelar-opcion${motivoCancelacion === op.id ? " report-detail__cancelar-opcion--active" : ""}`}
+                >
+                  <input
+                    type="radio"
+                    name="motivo"
+                    value={op.id}
+                    checked={motivoCancelacion === op.id}
+                    onChange={() => setMotivoCancelacion(op.id)}
+                  />
+                  <div>
+                    <span className="report-detail__cancelar-opcion-label">{op.label}</span>
+                    <span className="report-detail__cancelar-opcion-desc">{op.desc}</span>
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            <div className="report-detail__cancelar-acciones">
+              <button
+                className="report-detail__cancelar-btn-volver"
+                onClick={() => { setModalCancelar(false); setMotivoCancelacion(""); }}
+              >
+                Volver
+              </button>
+              <button
+                className="report-detail__cancelar-btn-confirmar"
+                onClick={handleCancelar}
+                disabled={!motivoCancelacion || loadingCancelar}
+              >
+                {loadingCancelar ? "Cancelando..." : "Confirmar cancelación"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -2,23 +2,27 @@ const { randomUUID } = require('crypto');
 const Novedad = require('../models/Novedad');
 const Notificacion = require('../models/Notificacion');
 const pool = require('../db');
+const { contienePalabraProhibida } = require('../utils/filtroTexto');
+const { getReporteTitulo, getAdminIds, validarAsignacionActiva } = require('../utils/dbHelpers');
 
-// Empleado: cargar novedad
 async function cargarNovedad(req, res) {
   const { reporteId } = req.params;
   const { tipo, descripcion, foto } = req.body;
 
   if (!tipo || !descripcion) return res.status(400).json({ error: 'Tipo y descripción son obligatorios.' });
+  if (contienePalabraProhibida(descripcion)) return res.status(400).json({ error: 'Tu novedad contiene lenguaje inapropiado.' });
 
   try {
-    const [rep] = await pool.query('SELECT titulo FROM reportes WHERE id = ?', [reporteId]);
-    if (!rep[0]) return res.status(404).json({ error: 'Reporte no encontrado.' });
+    const titulo = await getReporteTitulo(reporteId);
+    if (!titulo) return res.status(404).json({ error: 'Reporte no encontrado.' });
+
+    const asignado = await validarAsignacionActiva(reporteId, req.user.id);
+    if (!asignado) return res.status(403).json({ error: 'No estás asignado activamente a este reporte.' });
 
     const novedad = await Novedad.create(randomUUID(), {
       reporteId, empleadoId: req.user.id, tipo, descripcion, foto,
     });
 
-    // Si es bloqueante, cambiar estado interno
     if (tipo === 'bloqueante') {
       await pool.query(
         "UPDATE reportes SET estado_interno = 'bloqueado', actualizado_en = NOW() WHERE id = ?",
@@ -26,13 +30,12 @@ async function cargarNovedad(req, res) {
       );
     }
 
-    // Notificar a todos los admins
-    const [admins] = await pool.query("SELECT id FROM usuarios WHERE rol = 'admin'");
+    const admins = await getAdminIds();
     const emoji = tipo === 'bloqueante' ? '🚨' : '📝';
     const tipoLabel = tipo === 'bloqueante' ? 'BLOQUEANTE' : 'informativa';
     await Promise.all(admins.map((a) =>
       Notificacion.create(randomUUID(), a.id,
-        `${emoji} Novedad ${tipoLabel} en el reporte "${rep[0].titulo}": ${descripcion.slice(0, 80)}${descripcion.length > 80 ? '...' : ''}`,
+        `${emoji} Novedad ${tipoLabel} en el reporte "${titulo}": ${descripcion.slice(0, 80)}${descripcion.length > 80 ? '...' : ''}`,
         `/reporte/${reporteId}`
       )
     ));
@@ -43,7 +46,6 @@ async function cargarNovedad(req, res) {
   }
 }
 
-// Admin: responder novedad (y desbloquear si era bloqueante)
 async function responderNovedad(req, res) {
   const { novedadId } = req.params;
   const { respuesta } = req.body;
@@ -57,7 +59,6 @@ async function responderNovedad(req, res) {
 
     await Novedad.responder(novedadId, { respuesta, respondidoPor: req.user.id });
 
-    // Si era bloqueante, devolver a en_ejecucion
     if (novedad.tipo === 'bloqueante') {
       await pool.query(
         "UPDATE reportes SET estado_interno = 'en_ejecucion', actualizado_en = NOW() WHERE id = ?",
@@ -65,11 +66,10 @@ async function responderNovedad(req, res) {
       );
     }
 
-    // Notificar al empleado
-    const [rep] = await pool.query('SELECT titulo FROM reportes WHERE id = ?', [novedad.reporte_id]);
+    const titulo = await getReporteTitulo(novedad.reporte_id);
     await Notificacion.create(randomUUID(), novedad.empleado_id,
-      `✅ El admin respondió tu novedad en "${rep[0]?.titulo}": ${respuesta.slice(0, 80)}${respuesta.length > 80 ? '...' : ''}`,
-      `/panel-empleado`
+      `✅ El admin respondió tu novedad en "${titulo}": ${respuesta.slice(0, 80)}${respuesta.length > 80 ? '...' : ''}`,
+      `/reporte/${novedad.reporte_id}/novedad/${novedad.id}`
     );
 
     res.json({ ok: true });
@@ -78,7 +78,6 @@ async function responderNovedad(req, res) {
   }
 }
 
-// Obtener novedades de un reporte
 async function getNovedades(req, res) {
   try {
     const novedades = await Novedad.getByReporte(req.params.reporteId);
@@ -88,7 +87,6 @@ async function getNovedades(req, res) {
   }
 }
 
-// Admin: obtener todas las novedades
 async function getAllNovedades(req, res) {
   try {
     const [rows] = await pool.query(

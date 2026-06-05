@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../controllers/AuthController";
+import AvatarPicker from "../../components/AvatarPicker/AvatarPicker";
+import { AVATARES_VECINO } from "../../utils/avatares";
 import "./Register.scss";
 
 export default function Register() {
-  const [form, setForm] = useState({ name: "", username: "", password: "", confirm: "" });
+  const [form, setForm] = useState({ name: "", username: "", email: "", password: "", confirm: "" });
+  const [avatar, setAvatar] = useState(AVATARES_VECINO[0].emoji);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const { register, error, setError } = useAuth();
@@ -25,8 +28,9 @@ export default function Register() {
       setError("La contraseña debe tener al menos 6 caracteres.");
       return;
     }
-    const ok = await register(form.username, form.password, form.name);
-    if (ok) navigate("/tablero-reportes");
+    const ok = await register(form.username, form.password, form.name, form.email, avatar);
+    if (ok === 'pending') navigate("/verificar-email-pendiente");
+    else if (ok) navigate("/tablero-reportes");
   }
 
   return (
@@ -49,6 +53,19 @@ export default function Register() {
               value={form.name}
               onChange={handleChange}
               autoFocus
+              required
+            />
+          </div>
+
+          <div className="register__field">
+            <label className="register__label">Correo electrónico</label>
+            <input
+              className="register__input"
+              type="email"
+              name="email"
+              placeholder="Ej: juan@gmail.com"
+              value={form.email}
+              onChange={handleChange}
               required
             />
           </div>
@@ -122,6 +139,11 @@ export default function Register() {
                 )}
               </button>
             </div>
+          </div>
+
+          <div className="register__field">
+            <label className="register__label">Elegí tu avatar</label>
+            <AvatarPicker value={avatar} onChange={setAvatar} />
           </div>
 
           {error && <p className="register__error">{error}</p>}

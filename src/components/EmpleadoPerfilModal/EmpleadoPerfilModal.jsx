@@ -11,7 +11,14 @@ export default function EmpleadoPerfilModal({ perfil, loading, onClose }) {
           <h3 className="emp-modal__title">
             {perfil ? `Perfil — ${perfil.emp.name}` : "Cargando..."}
           </h3>
-          <button className="emp-modal__close" onClick={onClose}>✕</button>
+          <div className="emp-modal__header-actions">
+            {perfil && (
+              <Link to={`/perfil-empleado/${perfil.emp.id}`} className="emp-modal__ver-completo" onClick={onClose}>
+                Ver perfil completo →
+              </Link>
+            )}
+            <button className="emp-modal__close" onClick={onClose}>✕</button>
+          </div>
         </div>
 
         {loading && <p className="emp-modal__empty">Cargando perfil...</p>}

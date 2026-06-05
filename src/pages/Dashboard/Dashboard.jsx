@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
+import UserAvatar from "../../components/UserAvatar/UserAvatar";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
@@ -339,7 +340,7 @@ export default function Dashboard() {
               {statsEmpleados.map((emp) => (
                 <div key={emp.id} className="emp-stat-card emp-stat-card--clickable" onClick={() => abrirPerfil(emp.id)} title="Ver perfil detallado">
                   <div className="emp-stat-card__header">
-                    <div className="emp-stat-card__avatar">{emp.avatar}</div>
+                    <UserAvatar avatar={emp.avatar} size="sm" />
                     <div>
                       <p className="emp-stat-card__name">{emp.name}</p>
                       <p className="emp-stat-card__username">@{emp.username}</p>
@@ -347,8 +348,12 @@ export default function Dashboard() {
                   </div>
                   <div className="emp-stat-card__stats">
                     <div className="emp-stat-card__stat">
-                      <span className="emp-stat-card__stat-value emp-stat-card__stat-value--green">{emp.resueltos}</span>
-                      <span className="emp-stat-card__stat-label">Resueltos</span>
+                      <span className="emp-stat-card__stat-value emp-stat-card__stat-value--green">{emp.resueltosComoLider ?? emp.resueltos}</span>
+                      <span className="emp-stat-card__stat-label">👑 Líder</span>
+                    </div>
+                    <div className="emp-stat-card__stat">
+                      <span className="emp-stat-card__stat-value emp-stat-card__stat-value--green">{emp.participacionesComoMiembro ?? 0}</span>
+                      <span className="emp-stat-card__stat-label">👤 Miembro</span>
                     </div>
                     <div className="emp-stat-card__stat">
                       <span className="emp-stat-card__stat-value emp-stat-card__stat-value--blue">{emp.enCurso}</span>

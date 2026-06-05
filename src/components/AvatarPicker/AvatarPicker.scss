@@ -1,0 +1,28 @@
+.avatar-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  &__item {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, border-color 0.15s;
+    line-height: 1;
+
+    &:hover { transform: scale(1.12); }
+
+    &--selected {
+      border-color: #fff;
+      outline: 2.5px solid #3b82f6;
+      outline-offset: 1px;
+      transform: scale(1.08);
+    }
+  }
+}

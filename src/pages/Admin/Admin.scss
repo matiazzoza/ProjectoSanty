@@ -170,11 +170,25 @@
 
   &__table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     font-size: $font-size-sm;
 
+    // Columnas con ancho fijo; las demás (Reporte, Categoría, Autor, Fecha, Estado)
+    // se reparten el espacio restante en partes iguales.
+    th:nth-child(4) { width: 70px;  }
+    th:nth-child(7) { width: 105px; text-align: center; }
+
+    // Reporte y Categoría: título centrado, contenido a la izquierda
+    td:nth-child(1),
+    td:nth-child(2) { text-align: left; }
+
+    td:last-child {
+      text-align: center;
+    }
+
     th {
-      text-align: left;
+      text-align: center;
       padding: $space-3 $space-4;
       font-size: $font-size-xs;
       font-weight: 700;
@@ -184,6 +198,7 @@
       border-bottom: 1px solid $color-border;
       background: $color-surface-raised;
       white-space: nowrap;
+      overflow: hidden;
     }
 
     td {
@@ -191,6 +206,8 @@
       border-bottom: 1px solid $color-border-light;
       color: $color-text-muted;
       vertical-align: middle;
+      overflow: hidden;
+      text-align: center;
     }
 
     tr:last-child td { border-bottom: none; }
@@ -321,6 +338,18 @@
     border: 1px solid $color-border;
   }
 
+  &__emp-label {
+    width: 100%;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $color-text-muted;
+    margin-bottom: -$space-1;
+  }
+
+  &__emp-form .avatar-picker {
+    width: 100%;
+  }
+
   &__emp-input {
     padding: $space-2 $space-3;
     border: 1px solid $color-border;
@@ -341,6 +370,49 @@
     font-weight: 600;
     white-space: nowrap;
     &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  &__esp-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $space-2;
+    width: 100%;
+  }
+
+  &__esp-check {
+    @include flex(row, center, flex-start, $space-2);
+    padding: $space-2 $space-3;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    font-size: $font-size-xs;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    input { accent-color: $color-primary; }
+
+    &--active {
+      border-color: $color-primary;
+      background: rgba($color-primary, 0.06);
+      color: $color-primary;
+      font-weight: 600;
+    }
+
+    &:hover { border-color: $color-primary; }
+  }
+
+  &__esp-badges {
+    @include flex(row, center, flex-start, $space-1);
+    flex-wrap: wrap;
+    margin-top: $space-1;
+  }
+
+  &__esp-badge {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-primary;
+    background: rgba($color-primary, 0.08);
+    padding: 2px $space-2;
+    border-radius: $radius-full;
   }
 
   &__emp-list {
@@ -416,6 +488,13 @@
       background: rgba(234, 179, 8, 0.1);
       color: #b45309;
       &:hover { background: #b45309; color: white; }
+    }
+
+    &--reset {
+      background: rgba(139, 92, 246, 0.1);
+      color: #7c3aed;
+      &:hover:not(:disabled) { background: #7c3aed; color: white; }
+      &:disabled { opacity: 0.6; cursor: not-allowed; }
     }
   }
 
@@ -591,5 +670,46 @@
     white-space: nowrap;
     &:disabled { opacity: 0.5; cursor: not-allowed; }
   }
+
+  // Filtros mensajes
+  &__msg-filtros {
+    @include flex(column, stretch, flex-start, $space-2);
+    margin-bottom: $space-4;
+  }
+
+  &__msg-filtro-grupo {
+    @include flex(row, center, flex-start, $space-2);
+    flex-wrap: wrap;
+  }
+
+  &__msg-filtro-btn {
+    @include button-base;
+    padding: $space-2 $space-4;
+    border-radius: $radius-full;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    background: $color-bg;
+    border: 1.5px solid $color-border;
+    color: $color-text-muted;
+
+    &:hover { border-color: $color-primary; color: $color-primary; }
+    &--active { background: $color-primary-light; border-color: $color-primary; color: $color-primary; }
+    &--sm { font-size: $font-size-xs; padding: $space-1 $space-3; }
+  }
+
+  // Badge de contexto en mensajes
+  &__msg-contexto {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    padding: 2px $space-2;
+    border-radius: $radius-full;
+    white-space: nowrap;
+
+    &--reporte { background: #eff6ff; color: #2563eb; }
+    &--equipo  { background: #f0fdf4; color: #16a34a; }
+    &--ambos   { background: #f5f3ff; color: #7c3aed; }
+  }
+
+  &__novedad--leido { border-color: $color-border; opacity: 0.7; }
 
 }

@@ -22,44 +22,28 @@
   &__avatar-wrap {
     position: relative;
     width: fit-content;
+    @include flex(column, center, flex-start, $space-3);
   }
 
   &__avatar {
-    width: 100px;
-    height: 100px;
-    border-radius: $radius-full;
-    background: $color-primary-light;
-    border: 3px solid $color-border;
-    overflow: hidden;
     cursor: pointer;
     position: relative;
-    @include flex(row, center, center);
+    border-radius: $radius-full;
+    border: 3px solid transparent;
     transition: border-color $transition-base;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    display: inline-block;
 
     &:hover {
       border-color: $color-primary;
-
       .profile__avatar-overlay { opacity: 1; }
     }
-  }
-
-  &__avatar-initials {
-    font-size: $font-size-2xl;
-    font-weight: 700;
-    color: $color-primary;
   }
 
   &__avatar-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.5);
-    @include flex(column, center, center, $space-1);
+    background: rgba(0,0,0,0.45);
+    @include flex(column, center, center);
     opacity: 0;
     transition: opacity $transition-base;
     color: white;
@@ -68,22 +52,12 @@
     border-radius: $radius-full;
   }
 
-  &__remove-photo {
-    @include button-base;
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    border-radius: $radius-full;
-    background: $color-danger;
-    color: white;
-    font-size: 10px;
-    border: 2px solid white;
-    line-height: 1;
-
-    &:hover { background: #dc2626; }
+  &__avatar-picker {
+    padding: $space-3;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-md;
   }
 
   &__info {
@@ -110,6 +84,51 @@
     border-radius: $radius-sm;
 
     &:hover { color: $color-primary; background: $color-primary-light; }
+  }
+
+  &__pwd-btn {
+    @include button-base;
+    padding: $space-1;
+    background: transparent;
+    color: $color-text-light;
+    border-radius: $radius-sm;
+    font-size: $font-size-sm;
+    line-height: 1;
+
+    &:hover { color: $color-primary; background: $color-primary-light; }
+  }
+
+  &__modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+
+  &__modal-pwd {
+    @include card;
+    padding: $space-6 $space-8;
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+  }
+
+  &__modal-pwd-cerrar {
+    background: none;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    padding: $space-2 $space-4;
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    cursor: pointer;
+    align-self: flex-end;
+
+    &:hover { border-color: $color-text-muted; }
   }
 
   &__saved-hint {
@@ -258,4 +277,5 @@
     span { font-size: 3rem; }
     p { font-size: $font-size-base; }
   }
+
 }

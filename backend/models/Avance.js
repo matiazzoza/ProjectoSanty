@@ -12,10 +12,10 @@ async function getByReporte(reporteId) {
   return rows;
 }
 
-async function create(id, { reporteId, empleadoId, descripcion, porcentaje }) {
+async function create(id, { reporteId, empleadoId, descripcion, porcentaje, lat, lng }) {
   await pool.query(
-    'INSERT INTO avances (id, reporte_id, empleado_id, descripcion, porcentaje) VALUES (?, ?, ?, ?, ?)',
-    [id, reporteId, empleadoId, descripcion, porcentaje ?? null]
+    'INSERT INTO avances (id, reporte_id, empleado_id, descripcion, porcentaje, lat, lng) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [id, reporteId, empleadoId, descripcion, porcentaje ?? null, lat ?? null, lng ?? null]
   );
   const [rows] = await pool.query(
     `SELECT a.*, u.nombre AS empleado_nombre FROM avances a

@@ -1,11 +1,18 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../controllers/AuthController";
 import { useReports } from "../../controllers/ReportsController";
 import { useToast } from "../../controllers/ToastController";
 import { getEmpleados, crearEmpleado, editarEmpleado, toggleEmpleado, getPerfilEmpleado } from "../../models/asignacionModel";
+import { setEspecialidades } from "../../models/usuarioModel";
+import { ESPECIALIDADES } from "../../data/especialidades";
 import { getAllNovedades, responderNovedad } from "../../models/novedadModel";
+import { getMensajes, marcarLeido } from "../../models/mensajeAdminModel";
+import { triggerPasswordReset } from "../../models/authModel";
 import EmpleadoPerfilModal from "../../components/EmpleadoPerfilModal/EmpleadoPerfilModal";
+import UserAvatar from "../../components/UserAvatar/UserAvatar";
+import AvatarPicker from "../../components/AvatarPicker/AvatarPicker";
+import { AVATARES_MUNICIPIO } from "../../utils/avatares";
 import { CATEGORIES, STATUSES } from "../../data/mockReports";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -23,12 +30,17 @@ export default function Admin() {
   const { reports, updateStatus, deleteReport } = useReports();
   const { addToast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [filterCategory, setFilterCategory] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
+  const [filterStatus, setFilterStatus] = useState(searchParams.get("status") ?? "");
   const [filterEmpleado, setFilterEmpleado] = useState("");
   const [search, setSearch] = useState("");
-  const [tab, setTab] = useState("reportes"); // 'reportes' | 'empleados' | 'novedades'
+  const [tab, setTab] = useState("reportes"); // 'reportes' | 'empleados' | 'novedades' | 'mensajes'
+  const [mensajes, setMensajes] = useState([]);
+  const [loadingMensajes, setLoadingMensajes] = useState(false);
+  const [filtroMensajeTipo, setFiltroMensajeTipo] = useState("todos");
+  const [filtroMensajeContexto, setFiltroMensajeContexto] = useState("");
   const [showExportMenu, setShowExportMenu] = useState(false);
 
   // Empleados
@@ -38,18 +50,30 @@ export default function Admin() {
   const [empNombre, setEmpNombre] = useState("");
   const [empUsername, setEmpUsername] = useState("");
   const [empPassword, setEmpPassword] = useState("");
+  const [empAvatar, setEmpAvatar] = useState(AVATARES_MUNICIPIO[0].emoji);
   const [savingEmp, setSavingEmp] = useState(false);
 
+  // Especialidades
+  const [empEspecialidades, setEmpEspecialidades] = useState([]);
+  const [editEspecialidades, setEditEspecialidades] = useState([]);
+
+  function toggleEsp(id, setter) {
+    setter((prev) => prev.includes(id) ? prev.filter((e) => e !== id) : [...prev, id]);
+  }
+
   // Editar empleado
-  const [editEmp, setEditEmp] = useState(null); // empleado que se está editando
+  const [editEmp, setEditEmp] = useState(null);
   const [editNombre, setEditNombre] = useState("");
   const [editUsername, setEditUsername] = useState("");
   const [editPassword, setEditPassword] = useState("");
+  const [editAvatar, setEditAvatar] = useState(AVATARES_MUNICIPIO[0].emoji);
   const [savingEdit, setSavingEdit] = useState(false);
 
   // Perfil empleado
   const [perfilEmp, setPerfilEmp] = useState(null);
   const [loadingPerfil, setLoadingPerfil] = useState(false);
+
+  const [reseteandoPwd, setReseteandoPwd] = useState(null);
 
   // Novedades
   const [novedades, setNovedades] = useState([]);
@@ -62,9 +86,11 @@ export default function Admin() {
     getEmpleados().then(setEmpleados).catch(() => {}).finally(() => setLoadingEmp(false));
     setLoadingNovedades(true);
     getAllNovedades().then(setNovedades).catch(() => {}).finally(() => setLoadingNovedades(false));
+    setLoadingMensajes(true);
+    getMensajes().then(setMensajes).catch(() => {}).finally(() => setLoadingMensajes(false));
   }, []);
 
-  if (currentUser?.id !== "u1") {
+  if (currentUser?.role !== "admin" && currentUser?.role !== "superadmin") {
     return (
       <div className="admin admin--forbidden">
         <span>🚫</span>
@@ -106,10 +132,11 @@ export default function Admin() {
     if (!empNombre.trim() || !empUsername.trim() || !empPassword.trim()) return;
     setSavingEmp(true);
     try {
-      const nuevo = await crearEmpleado({ name: empNombre.trim(), username: empUsername.trim(), password: empPassword.trim() });
-      setEmpleados((prev) => [...prev, nuevo]);
+      const nuevo = await crearEmpleado({ name: empNombre.trim(), username: empUsername.trim(), password: empPassword.trim(), avatar: empAvatar });
+      if (empEspecialidades.length > 0) await setEspecialidades(nuevo.id, empEspecialidades);
+      setEmpleados((prev) => [...prev, { ...nuevo, especialidades: empEspecialidades }]);
       setShowFormEmp(false);
-      setEmpNombre(""); setEmpUsername(""); setEmpPassword("");
+      setEmpNombre(""); setEmpUsername(""); setEmpPassword(""); setEmpAvatar(AVATARES_MUNICIPIO[0].emoji); setEmpEspecialidades([]);
       addToast("Empleado creado correctamente", "success");
     } catch (err) {
       addToast(err.message, "error");
@@ -179,11 +206,13 @@ export default function Admin() {
     setEditNombre(emp.name);
     setEditUsername(emp.username);
     setEditPassword("");
+    setEditAvatar(emp.avatar ?? AVATARES_MUNICIPIO[0].emoji);
+    setEditEspecialidades(emp.especialidades ?? []);
   }
 
   function cerrarEdicion() {
     setEditEmp(null);
-    setEditNombre(""); setEditUsername(""); setEditPassword("");
+    setEditNombre(""); setEditUsername(""); setEditPassword(""); setEditAvatar(AVATARES_MUNICIPIO[0].emoji); setEditEspecialidades([]);
   }
 
   async function handleEditarEmpleado(e) {
@@ -195,8 +224,10 @@ export default function Admin() {
         name: editNombre.trim(),
         username: editUsername.trim(),
         password: editPassword.trim() || undefined,
+        avatar: editAvatar,
       });
-      setEmpleados((prev) => prev.map((em) => em.id === actualizado.id ? { ...em, ...actualizado } : em));
+      await setEspecialidades(editEmp.id, editEspecialidades);
+      setEmpleados((prev) => prev.map((em) => em.id === actualizado.id ? { ...em, ...actualizado, especialidades: editEspecialidades } : em));
       cerrarEdicion();
       addToast("Empleado actualizado", "success");
     } catch (err) {
@@ -237,6 +268,18 @@ export default function Admin() {
     }
   }
 
+  async function handleResetPasswordEmpleado(empId) {
+    setReseteandoPwd(empId);
+    try {
+      await triggerPasswordReset(empId);
+      addToast("Email de recuperación enviado al empleado.", "success");
+    } catch (err) {
+      addToast(err.message || "Error al enviar el email.", "error");
+    } finally {
+      setReseteandoPwd(null);
+    }
+  }
+
   async function handleToggleEmpleado(id) {
     try {
       const { activo } = await toggleEmpleado(id);
@@ -271,6 +314,10 @@ export default function Admin() {
             ⚠️ Novedades
             <span className="admin__tab-count">{novedades.filter((n) => !n.respuestaAdmin).length}</span>
           </button>
+          <button className={`admin__tab ${tab === "mensajes" ? "admin__tab--active" : ""}`} onClick={() => setTab("mensajes")}>
+            ✉️ Mensajes
+            <span className="admin__tab-count">{mensajes.filter((m) => !m.leido).length}</span>
+          </button>
         </div>
 
         {/* Sección empleados */}
@@ -288,6 +335,17 @@ export default function Admin() {
                 <input className="admin__emp-input" placeholder="Nombre completo" value={empNombre} onChange={(e) => setEmpNombre(e.target.value)} required />
                 <input className="admin__emp-input" placeholder="Nombre de usuario" value={empUsername} onChange={(e) => setEmpUsername(e.target.value)} required />
                 <input className="admin__emp-input" type="password" placeholder="Contraseña" value={empPassword} onChange={(e) => setEmpPassword(e.target.value)} required />
+                <label className="admin__emp-label">Avatar</label>
+                <AvatarPicker value={empAvatar} onChange={setEmpAvatar} set={AVATARES_MUNICIPIO} />
+                <label className="admin__emp-label">Especialidades</label>
+                <div className="admin__esp-grid">
+                  {ESPECIALIDADES.map((esp) => (
+                    <label key={esp.id} className={`admin__esp-check ${empEspecialidades.includes(esp.id) ? "admin__esp-check--active" : ""}`}>
+                      <input type="checkbox" checked={empEspecialidades.includes(esp.id)} onChange={() => toggleEsp(esp.id, setEmpEspecialidades)} />
+                      {esp.icon} {esp.label}
+                    </label>
+                  ))}
+                </div>
                 <button className="admin__emp-submit" type="submit" disabled={savingEmp}>
                   {savingEmp ? "Guardando..." : "Crear empleado"}
                 </button>
@@ -302,10 +360,18 @@ export default function Admin() {
               <div className="admin__emp-list">
                 {empleados.map((emp) => (
                   <div key={emp.id} className={`admin__emp-card ${!emp.activo ? "admin__emp-card--inactivo" : ""}`}>
-                    <div className="admin__emp-avatar">{emp.avatar}</div>
+                    <UserAvatar avatar={emp.avatar} size="sm" />
                     <div className="admin__emp-info">
                       <span className="admin__emp-name">{emp.name}</span>
                       <span className="admin__emp-username">@{emp.username}</span>
+                      {emp.especialidades?.length > 0 && (
+                        <div className="admin__esp-badges">
+                          {emp.especialidades.map((e) => {
+                            const esp = ESPECIALIDADES.find((x) => x.id === e);
+                            return esp ? <span key={e} className="admin__esp-badge">{esp.icon} {esp.label}</span> : null;
+                          })}
+                        </div>
+                      )}
                     </div>
                     <span className={`admin__emp-estado ${emp.activo ? "admin__emp-estado--activo" : "admin__emp-estado--inactivo"}`}>
                       {emp.activo ? "Activo" : "Inactivo"}
@@ -313,6 +379,14 @@ export default function Admin() {
                     <div className="admin__emp-actions">
                       <button className="admin__emp-btn admin__emp-btn--perfil" onClick={() => abrirPerfil(emp.id)}>Ver perfil</button>
                       <button className="admin__emp-btn admin__emp-btn--editar" onClick={() => abrirEdicion(emp)}>Editar</button>
+                      <button
+                        className="admin__emp-btn admin__emp-btn--reset"
+                        onClick={() => handleResetPasswordEmpleado(emp.id)}
+                        disabled={reseteandoPwd === emp.id}
+                        title="Enviar email de recuperación de contraseña"
+                      >
+                        {reseteandoPwd === emp.id ? "Enviando..." : "Reset pwd"}
+                      </button>
                       <button
                         className={`admin__emp-toggle ${emp.activo ? "admin__emp-toggle--desactivar" : "admin__emp-toggle--activar"}`}
                         onClick={() => handleToggleEmpleado(emp.id)}
@@ -337,6 +411,17 @@ export default function Admin() {
                     <input className="admin__emp-input" placeholder="Nombre completo" value={editNombre} onChange={(e) => setEditNombre(e.target.value)} required />
                     <input className="admin__emp-input" placeholder="Nombre de usuario" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} required />
                     <input className="admin__emp-input" type="password" placeholder="Nueva contraseña (dejar vacío para no cambiar)" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} />
+                    <label className="admin__emp-label">Avatar</label>
+                    <AvatarPicker value={editAvatar} onChange={setEditAvatar} set={AVATARES_MUNICIPIO} />
+                    <label className="admin__emp-label">Especialidades</label>
+                    <div className="admin__esp-grid">
+                      {ESPECIALIDADES.map((esp) => (
+                        <label key={esp.id} className={`admin__esp-check ${editEspecialidades.includes(esp.id) ? "admin__esp-check--active" : ""}`}>
+                          <input type="checkbox" checked={editEspecialidades.includes(esp.id)} onChange={() => toggleEsp(esp.id, setEditEspecialidades)} />
+                          {esp.icon} {esp.label}
+                        </label>
+                      ))}
+                    </div>
                     <button className="admin__emp-submit" type="submit" disabled={savingEdit}>
                       {savingEdit ? "Guardando..." : "Guardar cambios"}
                     </button>
@@ -409,6 +494,96 @@ export default function Admin() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Sección mensajes */}
+        {tab === "mensajes" && (
+          <div className="admin__novedades">
+            <h2 className="admin__empleados-title">Mensajes de empleados</h2>
+
+            {/* Filtros */}
+            <div className="admin__msg-filtros">
+              <div className="admin__msg-filtro-grupo">
+                {["todos", "general", "reporte"].map((t) => (
+                  <button
+                    key={t}
+                    className={`admin__msg-filtro-btn ${filtroMensajeTipo === t ? "admin__msg-filtro-btn--active" : ""}`}
+                    onClick={() => { setFiltroMensajeTipo(t); setFiltroMensajeContexto(""); }}
+                  >
+                    {t === "todos" ? "Todos" : t === "general" ? "💬 General" : "📋 Sobre un reporte"}
+                  </button>
+                ))}
+              </div>
+              {filtroMensajeTipo === "reporte" && (
+                <div className="admin__msg-filtro-grupo">
+                  {["", "reporte", "equipo", "ambos"].map((c) => (
+                    <button
+                      key={c}
+                      className={`admin__msg-filtro-btn admin__msg-filtro-btn--sm ${filtroMensajeContexto === c ? "admin__msg-filtro-btn--active" : ""}`}
+                      onClick={() => setFiltroMensajeContexto(c)}
+                    >
+                      {c === "" ? "Todos" : c === "reporte" ? "📋 Reporte" : c === "equipo" ? "👥 Equipo" : "🔀 Ambos"}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {loadingMensajes ? (
+              <p className="admin__empty-row">Cargando...</p>
+            ) : (() => {
+              const filtrados = mensajes.filter((m) => {
+                if (filtroMensajeTipo === "general" && m.reporteId) return false;
+                if (filtroMensajeTipo === "reporte" && !m.reporteId) return false;
+                if (filtroMensajeContexto && m.contexto !== filtroMensajeContexto) return false;
+                return true;
+              });
+              if (filtrados.length === 0) return <p className="admin__empty-row">No hay mensajes en esta categoría.</p>;
+              return (
+                <div className="admin__novedades-list">
+                  {filtrados.map((m) => (
+                    <div key={m.id} className={`admin__novedad ${m.leido ? "admin__novedad--leido" : "admin__novedad--informativa"}`}>
+                      <div className="admin__novedad-header">
+                        <span className="admin__novedad-empleado">✉️ {m.empleadoNombre}</span>
+                        {m.reporteTitulo && (
+                          <a
+                            className="admin__novedad-reporte"
+                            href={`/reporte/${m.reporteId}`}
+                            onClick={(e) => { e.preventDefault(); navigate(`/reporte/${m.reporteId}`); }}
+                          >
+                            📋 {m.reporteTitulo} →
+                          </a>
+                        )}
+                        {m.contexto && (
+                          <span className={`admin__msg-contexto admin__msg-contexto--${m.contexto}`}>
+                            {m.contexto === "equipo" ? "👥 Equipo" : m.contexto === "ambos" ? "🔀 Ambos" : "📋 Reporte"}
+                          </span>
+                        )}
+                        <span className="admin__novedad-fecha">
+                          {new Date(m.creadoEn).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                        {m.leido
+                          ? <span className="admin__novedad-respondida-label">✅ Visto</span>
+                          : (
+                            <button
+                              className="admin__novedad-btn"
+                              onClick={async () => {
+                                await marcarLeido(m.id);
+                                setMensajes((prev) => prev.map((x) => x.id === m.id ? { ...x, leido: 1 } : x));
+                              }}
+                            >
+                              Marcar como visto
+                            </button>
+                          )
+                        }
+                      </div>
+                      <p className="admin__novedad-desc">{m.contenido}</p>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         )}
 

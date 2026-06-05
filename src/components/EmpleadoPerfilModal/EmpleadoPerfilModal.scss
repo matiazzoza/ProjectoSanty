@@ -25,6 +25,18 @@
     @include flex(row, center, space-between);
   }
 
+  &__header-actions {
+    @include flex(row, center, flex-end, $space-3);
+  }
+
+  &__ver-completo {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $color-primary;
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+
   &__title {
     font-size: $font-size-lg;
     font-weight: 700;

@@ -151,7 +151,7 @@ export default function Admin() {
       const statusInfo = STATUSES.find((s) => s.id === r.status);
       return {
         Título: r.title,
-        Categoría: cat ? `${cat.icon} ${cat.label}` : r.category,
+        Categoría: cat ? cat.label : r.category,
         Autor: r.authorName,
         Barrio: r.barrio?.nombre ?? "—",
         Estado: statusInfo?.label ?? r.status,
@@ -187,7 +187,7 @@ export default function Admin() {
         const statusInfo = STATUSES.find((s) => s.id === r.status);
         return [
           r.title,
-          cat ? `${cat.icon} ${cat.label}` : r.category,
+          cat ? cat.label : r.category,
           r.authorName,
           r.barrio?.nombre ?? "—",
           statusInfo?.label ?? r.status,

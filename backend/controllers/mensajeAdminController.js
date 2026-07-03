@@ -2,7 +2,7 @@ const { randomUUID } = require('crypto');
 const MensajeAdmin = require('../models/MensajeAdmin');
 const Notificacion = require('../models/Notificacion');
 const { contienePalabraProhibida } = require('../utils/filtroTexto');
-const { getAdminYSuperadminIds, validarAsignacionActiva } = require('../utils/dbHelpers');
+const { getAdminIds, validarAsignacionActiva } = require('../utils/dbHelpers');
 
 async function enviarMensaje(req, res) {
   const { contenido, reporteId, contexto } = req.body;
@@ -21,7 +21,7 @@ async function enviarMensaje(req, res) {
       reporteId || null, contexto || null
     );
 
-    const admins = await getAdminYSuperadminIds();
+    const admins = await getAdminIds();
     const preview = contenido.trim().slice(0, 80) + (contenido.trim().length > 80 ? '...' : '');
     const contextoLabel = contexto === 'equipo' ? ' [Equipo]' : contexto === 'reporte' ? ' [Reporte]' : contexto === 'ambos' ? ' [Ambos]' : '';
     await Promise.all(admins.map((a) =>

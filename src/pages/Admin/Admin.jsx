@@ -13,7 +13,7 @@ import EmpleadoPerfilModal from "../../components/EmpleadoPerfilModal/EmpleadoPe
 import UserAvatar from "../../components/UserAvatar/UserAvatar";
 import AvatarPicker from "../../components/AvatarPicker/AvatarPicker";
 import { AVATARES_MUNICIPIO } from "../../utils/avatares";
-import { CATEGORIES, STATUSES } from "../../data/mockReports";
+import { CATEGORIES, STATUSES } from "../../data/reportConstants";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";

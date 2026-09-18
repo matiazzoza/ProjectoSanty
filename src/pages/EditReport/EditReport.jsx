@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../controllers/AuthController";
 import { useReports } from "../../controllers/ReportsController";
-import { CATEGORIES } from "../../data/mockReports";
+import { CATEGORIES } from "../../data/reportConstants";
 import { getAll as getBarrios } from "../../models/barrioModel";
 import MapPicker from "../../components/MapPicker/MapPicker";
 import "./EditReport.scss";

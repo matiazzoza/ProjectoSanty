@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../controllers/AuthController";
 import { getMiPerfilEmpleado, getPerfilEmpleadoCompleto } from "../../models/asignacionModel";
-import { CATEGORIES } from "../../data/mockReports";
+import { CATEGORIES } from "../../data/reportConstants";
 import { ESPECIALIDADES } from "../../data/especialidades";
 import UserAvatar from "../../components/UserAvatar/UserAvatar";
 import CambiarContrasena from "../../components/CambiarContrasena/CambiarContrasena";

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../../controllers/AuthController";
 import { useReports } from "../../controllers/ReportsController";
-import { CATEGORIES, STATUSES } from "../../data/mockReports";
+import { CATEGORIES, STATUSES } from "../../data/reportConstants";
 import { getPrioridad } from "../../utils/prioridad";
 import "./ReportCard.scss";
 

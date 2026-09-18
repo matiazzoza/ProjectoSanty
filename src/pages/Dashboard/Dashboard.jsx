@@ -6,7 +6,7 @@ import {
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import { Link } from "react-router-dom";
 import { useReports } from "../../controllers/ReportsController";
-import { CATEGORIES } from "../../data/mockReports";
+import { CATEGORIES } from "../../data/reportConstants";
 import { getPrioridad } from "../../utils/prioridad";
 import { getEstadisticasEmpleados, getPerfilEmpleado } from "../../models/asignacionModel";
 import EmpleadoPerfilModal from "../../components/EmpleadoPerfilModal/EmpleadoPerfilModal";

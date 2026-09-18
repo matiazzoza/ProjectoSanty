@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../controllers/AuthController";
 import { useReports } from "../../controllers/ReportsController";
 import { useToast } from "../../controllers/ToastController";
-import { CATEGORIES, STATUSES } from "../../data/mockReports";
+import { CATEGORIES, STATUSES } from "../../data/reportConstants";
 import MapPicker from "../../components/MapPicker/MapPicker";
 import { toggle as toggleSeguir, getByUsuario as getSeguidos } from "../../models/seguimientoModel";
 import { getHistorial, getById as getReporteById, cancelarReporte, enviarVerificacion } from "../../models/reporteModel";

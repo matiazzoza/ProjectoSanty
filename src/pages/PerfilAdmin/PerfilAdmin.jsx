@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { getPerfilAdmin, getMiPerfilAdmin } from "../../models/usuarioModel";
-import { CATEGORIES } from "../../data/mockReports";
+import { CATEGORIES } from "../../data/reportConstants";
 import UserAvatar from "../../components/UserAvatar/UserAvatar";
 import CambiarContrasena from "../../components/CambiarContrasena/CambiarContrasena";
 import "./PerfilAdmin.scss";

@@ -1,4 +1,4 @@
-import { CATEGORIES } from "../../data/mockReports";
+import { CATEGORIES } from "../../data/reportConstants";
 import "./CategoryFilter.scss";
 
 export default function CategoryFilter({ selected, onChange }) {

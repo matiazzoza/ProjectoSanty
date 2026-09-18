@@ -8,7 +8,7 @@ import { getMisVerificaciones, verificarReporte } from "../../models/reporteMode
 import { cargarNovedad } from "../../models/novedadModel";
 import { registrarAvance } from "../../models/avanceModel";
 import { enviarMensaje, getMisMensajes } from "../../models/mensajeAdminModel";
-import { CATEGORIES } from "../../data/mockReports";
+import { CATEGORIES } from "../../data/reportConstants";
 import UserAvatar from "../../components/UserAvatar/UserAvatar";
 import "./PanelEmpleado.scss";
 

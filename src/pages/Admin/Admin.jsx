@@ -27,7 +27,7 @@ function formatDate(iso) {
 
 export default function Admin() {
   const { currentUser } = useAuth();
-  const { reports, updateStatus, deleteReport } = useReports();
+  const { reports, deleteReport } = useReports();
   const { addToast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -114,11 +114,6 @@ export default function Admin() {
     if (search && !r.title.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
-
-  function handleStatusChange(reportId, status) {
-    updateStatus(reportId, status);
-    addToast("Estado actualizado", "success");
-  }
 
   function handleDelete(reportId, title) {
     if (window.confirm(`¿Eliminar "${title}"?`)) {
@@ -686,16 +681,15 @@ export default function Admin() {
                       <td className="admin__votes">👍 {r.votes.length}</td>
                       <td className="admin__date">{formatDate(r.createdAt)}</td>
                       <td>
-                        <select
-                          className="admin__status-select"
-                          value={r.status}
-                          onChange={(e) => handleStatusChange(r.id, e.target.value)}
+                        <a
+                          className="admin__status-badge"
+                          href={`/reporte/${r.id}`}
+                          onClick={(e) => { e.preventDefault(); navigate(`/reporte/${r.id}`); }}
                           style={{ color: statusInfo?.color, borderColor: statusInfo?.color }}
+                          title="Ver detalle para cambiar el estado"
                         >
-                          {STATUSES.map((s) => (
-                            <option key={s.id} value={s.id}>{s.label}</option>
-                          ))}
-                        </select>
+                          {statusInfo?.label ?? r.status}
+                        </a>
                       </td>
                       <td>
                         <button

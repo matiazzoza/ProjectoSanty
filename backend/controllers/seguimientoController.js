@@ -1,7 +1,7 @@
 const Seguimiento = require('../models/Seguimiento');
 
 async function toggle(req, res) {
-  const { usuarioId } = req.body;
+  const usuarioId = req.user.id;
   const reporteId = req.params.id;
   try {
     const siguiendo = await Seguimiento.exists(usuarioId, reporteId);
@@ -18,6 +18,8 @@ async function toggle(req, res) {
 }
 
 async function getByUsuario(req, res) {
+  if (req.params.userId !== req.user.id)
+    return res.status(403).json({ error: 'No podés ver los seguimientos de otro usuario.' });
   try {
     const ids = await Seguimiento.getByUsuario(req.params.userId);
     res.json(ids);

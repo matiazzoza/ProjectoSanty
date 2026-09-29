@@ -3,12 +3,12 @@ const Comentario = require('../models/Comentario');
 const { contienePalabraProhibida } = require('../utils/filtroTexto');
 
 async function create(req, res) {
-  const { authorId, text } = req.body;
-  const esOficial = req.user?.role === 'admin';
+  const { text } = req.body;
+  const esOficial = req.user?.role === 'admin' || req.user?.role === 'superadmin';
   if (contienePalabraProhibida(text))
     return res.status(400).json({ error: 'Tu comentario contiene lenguaje inapropiado.' });
   try {
-    const comentario = await Comentario.create(randomUUID(), req.params.id, authorId, text, esOficial);
+    const comentario = await Comentario.create(randomUUID(), req.params.id, req.user.id, text, esOficial);
     res.status(201).json(comentario);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -17,6 +17,13 @@ async function create(req, res) {
 
 async function remove(req, res) {
   try {
+    const comentario = await Comentario.getById(req.params.commentId);
+    if (!comentario) return res.status(404).json({ error: 'Comentario no encontrado.' });
+
+    const esAdmin = req.user.role === 'admin' || req.user.role === 'superadmin';
+    if (!esAdmin && comentario.authorId !== req.user.id)
+      return res.status(403).json({ error: 'Solo podés borrar tus propios comentarios.' });
+
     await Comentario.remove(req.params.commentId, req.params.reportId);
     res.json({ ok: true });
   } catch (err) {

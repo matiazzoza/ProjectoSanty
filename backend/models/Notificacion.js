@@ -29,8 +29,8 @@ async function createForAllUsers(mensaje) {
   );
 }
 
-async function marcarLeida(id) {
-  await pool.query('UPDATE notificaciones SET leida = 1 WHERE id = ?', [id]);
+async function marcarLeida(id, usuarioId) {
+  await pool.query('UPDATE notificaciones SET leida = 1 WHERE id = ? AND usuario_id = ?', [id, usuarioId]);
 }
 
 module.exports = { getByUsuario, create, createForAllUsers, marcarLeida };

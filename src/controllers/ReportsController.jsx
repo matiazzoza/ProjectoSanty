@@ -44,6 +44,13 @@ export function ReportsProvider({ children }) {
     await updateReport(reportId, { status });
   }
 
+  // Para releer el reporte tras una acción con su propio endpoint (cancelar, enviar a
+  // verificación, asignar, validar cierre) que ya cambió el estado en el backend.
+  async function refreshReport(reportId) {
+    const updated = await reporteModel.getById(reportId);
+    setReports((prev) => prev.map((r) => (r.id === reportId ? updated : r)));
+  }
+
   async function addComment(reportId, comment) {
     const created = await reporteModel.addComment(reportId, comment);
     setReports((prev) =>
@@ -75,7 +82,7 @@ export function ReportsProvider({ children }) {
 
   return (
     <ReportsContext.Provider
-      value={{ reports, loading, addReport, updateReport, toggleVote, updateStatus, addComment, deleteComment, deleteReport, getReport }}
+      value={{ reports, loading, addReport, updateReport, toggleVote, updateStatus, refreshReport, addComment, deleteComment, deleteReport, getReport }}
     >
       {children}
     </ReportsContext.Provider>

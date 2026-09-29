@@ -80,6 +80,11 @@ async function responderNovedad(req, res) {
 
 async function getNovedades(req, res) {
   try {
+    const esAdmin = req.user.role === 'admin' || req.user.role === 'superadmin';
+    if (!esAdmin) {
+      const asignado = await validarAsignacionActiva(req.params.reporteId, req.user.id);
+      if (!asignado) return res.status(403).json({ error: 'No tenés acceso a las novedades de este reporte.' });
+    }
     const novedades = await Novedad.getByReporte(req.params.reporteId);
     res.json(novedades);
   } catch (err) {

@@ -45,6 +45,11 @@ async function registrarAvance(req, res) {
 
 async function getAvances(req, res) {
   try {
+    const esAdmin = req.user.role === 'admin' || req.user.role === 'superadmin';
+    if (!esAdmin) {
+      const asignado = await validarAsignacionActiva(req.params.reporteId, req.user.id);
+      if (!asignado) return res.status(403).json({ error: 'No tenés acceso a los avances de este reporte.' });
+    }
     const avances = await Avance.getByReporte(req.params.reporteId);
     res.json(avances);
   } catch (err) {

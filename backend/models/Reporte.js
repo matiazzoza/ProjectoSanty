@@ -7,6 +7,7 @@ async function fetchReports(whereClause = '', params = []) {
             r.latitud AS lat, r.longitud AS lng, r.direccion AS address,
             r.foto AS photo, r.foto_campo AS fotoCampo, r.foto_resolucion AS fotoResolucion,
             r.estado_interno AS estadoInterno, r.motivo_cancelacion AS motivoCancelacion,
+            r.justificacion_cancelacion AS justificacionCancelacion,
             r.verificador_id AS verificadorId, r.foto_verificacion AS fotoVerificacion,
             r.verificacion_resultado AS verificacionResultado, r.verificacion_nota AS verificacionNota,
             r.autor_id AS authorId,
@@ -172,10 +173,10 @@ async function getMisVerificaciones(verificadorId) {
   }));
 }
 
-async function cancelar(id, motivo) {
+async function cancelar(id, motivo, justificacion = null) {
   await pool.query(
-    'UPDATE reportes SET estado = ?, motivo_cancelacion = ?, estado_interno = NULL WHERE id = ?',
-    ['cancelado', motivo, id]
+    'UPDATE reportes SET estado = ?, motivo_cancelacion = ?, justificacion_cancelacion = ?, estado_interno = NULL WHERE id = ?',
+    ['cancelado', motivo, justificacion, id]
   );
   await pool.query('UPDATE asignaciones SET activo = 0 WHERE reporte_id = ?', [id]);
 }

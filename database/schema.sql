@@ -276,3 +276,7 @@ ALTER TABLE reportes
 
 ALTER TABLE novedades
   MODIFY COLUMN foto MEDIUMTEXT NULL;
+
+-- Sesión 11: justificación obligatoria al cancelar un reporte que el verificador había confirmado
+ALTER TABLE reportes
+  ADD COLUMN IF NOT EXISTS justificacion_cancelacion TEXT NULL;

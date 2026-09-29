@@ -17,8 +17,8 @@ export const getHistorial = (reportId) =>
 
 export const getEstadisticasPublicas = () => request('/reports/stats');
 
-export const cancelarReporte = (id, motivo) =>
-  request(`/reports/${id}/cancelar`, { method: 'PUT', body: JSON.stringify({ motivo }) });
+export const cancelarReporte = (id, motivo, justificacion = null) =>
+  request(`/reports/${id}/cancelar`, { method: 'PUT', body: JSON.stringify({ motivo, justificacion }) });
 
 export const enviarVerificacion = (id, verificadorId) =>
   request(`/reports/${id}/enviar-verificacion`, { method: 'PUT', body: JSON.stringify({ verificadorId }) });

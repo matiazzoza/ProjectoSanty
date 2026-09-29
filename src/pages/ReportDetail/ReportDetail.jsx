@@ -31,7 +31,7 @@ export default function ReportDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const { getReport, toggleVote, deleteReport, updateStatus, addComment, deleteComment, updateReport } = useReports();
+  const { getReport, toggleVote, deleteReport, updateStatus, refreshReport, addComment, deleteComment, updateReport } = useReports();
 
   const { addToast } = useToast();
   const [commentText, setCommentText] = useState("");
@@ -74,8 +74,11 @@ export default function ReportDetail() {
 
   const [modalCancelar, setModalCancelar] = useState(false);
   const [motivoCancelacion, setMotivoCancelacion] = useState("");
+  const [justificacionCancelacion, setJustificacionCancelacion] = useState("");
   const [loadingCancelar, setLoadingCancelar] = useState(false);
   const [cancelMotivo, setCancelMotivo] = useState(null);
+
+  const [justificacionAsignar, setJustificacionAsignar] = useState("");
 
   const [modalVerificar, setModalVerificar] = useState(false);
   const [verificadorSeleccionado, setVerificadorSeleccionado] = useState("");
@@ -124,7 +127,6 @@ export default function ReportDetail() {
   const hasVoted = currentUser ? report.votes.includes(currentUser.id) : false;
   const isOwner = currentUser?.id === report.authorId;
   const isAdmin = currentUser?.role === "admin" || currentUser?.role === "superadmin";
-  const canChangeStatus = isAdmin;
   const canVote = currentUser && report.status === "pendiente";
   // Esperar el estado fresco antes de mostrar acciones destructivas
   const isPendiente = freshStatus === "pendiente";
@@ -156,11 +158,6 @@ export default function ReportDetail() {
       addToast("Reporte eliminado", "info");
       navigate("/tablero-reportes");
     }
-  }
-
-  function handleStatusChange(e) {
-    updateStatus(report.id, e.target.value);
-    addToast("Estado actualizado", "success");
   }
 
   function handleMarkDuplicate() {
@@ -196,12 +193,15 @@ export default function ReportDetail() {
 
   async function handleAsignar() {
     if (!empleadoSeleccionado) return;
+    if (report.verificacionResultado === "desmiente" && !justificacionAsignar.trim()) return;
     setLoadingAsignar(true);
     try {
-      await asignar(report.id, empleadoSeleccionado, prioridadSeleccionada, fechaLimite || null, miembrosSeleccionados);
+      await asignar(report.id, empleadoSeleccionado, prioridadSeleccionada, fechaLimite || null, miembrosSeleccionados, justificacionAsignar.trim() || null);
       const nuevas = await getAsignacionesReporte(report.id);
       setAsignaciones(nuevas);
+      await refreshReport(report.id);
       setMiembrosSeleccionados([]);
+      setJustificacionAsignar("");
       addToast("Equipo asignado correctamente", "success");
     } catch (err) {
       addToast(err.message, "error");
@@ -231,7 +231,7 @@ export default function ReportDetail() {
     try {
       await validarCierre(report.id);
       addToast("Reporte validado como resuelto", "success");
-      updateStatus(report.id, "resuelto");
+      await refreshReport(report.id);
     } catch (err) {
       addToast(err.message, "error");
     }
@@ -267,7 +267,7 @@ export default function ReportDetail() {
     setLoadingVerificar(true);
     try {
       await enviarVerificacion(report.id, verificadorSeleccionado);
-      updateStatus(report.id, "en_verificacion");
+      await refreshReport(report.id);
       addToast("Reporte enviado a verificación. Se notificó al empleado.", "success");
       setModalVerificar(false);
       setVerificadorSeleccionado("");
@@ -280,14 +280,16 @@ export default function ReportDetail() {
 
   async function handleCancelar() {
     if (!motivoCancelacion) return;
+    if (report.verificacionResultado === "confirma" && !justificacionCancelacion.trim()) return;
     setLoadingCancelar(true);
     try {
-      await cancelarReporte(report.id, motivoCancelacion);
-      updateStatus(report.id, "cancelado");
+      await cancelarReporte(report.id, motivoCancelacion, justificacionCancelacion.trim() || null);
+      await refreshReport(report.id);
       setCancelMotivo(motivoCancelacion);
       addToast("Reporte cancelado. Se notificó al vecino.", "success");
       setModalCancelar(false);
       setMotivoCancelacion("");
+      setJustificacionCancelacion("");
     } catch (err) {
       addToast(err.message, "error");
     } finally {
@@ -464,19 +466,6 @@ export default function ReportDetail() {
             </div>
 
             <div className="report-detail__manage">
-              {canChangeStatus && (
-                <select
-                  className="report-detail__status-select"
-                  value={report.status}
-                  onChange={handleStatusChange}
-                  style={{ borderColor: statusInfo.color, color: statusInfo.color }}
-                >
-                  {STATUSES.map((s) => (
-                    <option key={s.id} value={s.id}>{s.label}</option>
-                  ))}
-                </select>
-              )}
-
               {!isOwner && currentUser && report.status !== "duplicado" && (
                 <button className="report-detail__duplicate-btn" onClick={handleMarkDuplicate}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -744,10 +733,25 @@ export default function ReportDetail() {
                   </div>
                 )}
 
+                {report.verificacionResultado === "desmiente" && (
+                  <div className="asignacion-form__justificacion">
+                    <p className="asignacion-form__justificacion-aviso">
+                      ⚠️ El verificador desmintió este reporte. Para asignarlo igual, explicá por qué.
+                    </p>
+                    <textarea
+                      className="asignacion-form__justificacion-input"
+                      placeholder="Justificación (obligatoria)..."
+                      value={justificacionAsignar}
+                      onChange={(e) => setJustificacionAsignar(e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+                )}
+
                 <button
                   className="asignacion-form__btn"
                   onClick={handleAsignar}
-                  disabled={!empleadoSeleccionado || loadingAsignar}
+                  disabled={!empleadoSeleccionado || loadingAsignar || (report.verificacionResultado === "desmiente" && !justificacionAsignar.trim())}
                 >
                   {asignaciones.length > 0 ? "Reasignar equipo" : "Asignar equipo"}
                 </button>
@@ -1050,17 +1054,32 @@ export default function ReportDetail() {
               ))}
             </div>
 
+            {report.verificacionResultado === "confirma" && (
+              <div className="report-detail__cancelar-justificacion">
+                <p className="report-detail__cancelar-justificacion-aviso">
+                  ⚠️ Un verificador confirmó este problema en el lugar. Para cancelarlo igual, explicá por qué.
+                </p>
+                <textarea
+                  className="report-detail__cancelar-justificacion-input"
+                  placeholder="Justificación (obligatoria)..."
+                  value={justificacionCancelacion}
+                  onChange={(e) => setJustificacionCancelacion(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            )}
+
             <div className="report-detail__cancelar-acciones">
               <button
                 className="report-detail__cancelar-btn-volver"
-                onClick={() => { setModalCancelar(false); setMotivoCancelacion(""); }}
+                onClick={() => { setModalCancelar(false); setMotivoCancelacion(""); setJustificacionCancelacion(""); }}
               >
                 Volver
               </button>
               <button
                 className="report-detail__cancelar-btn-confirmar"
                 onClick={handleCancelar}
-                disabled={!motivoCancelacion || loadingCancelar}
+                disabled={!motivoCancelacion || loadingCancelar || (report.verificacionResultado === "confirma" && !justificacionCancelacion.trim())}
               >
                 {loadingCancelar ? "Cancelando..." : "Confirmar cancelación"}
               </button>

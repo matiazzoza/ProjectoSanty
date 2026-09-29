@@ -1,7 +1,7 @@
 const Voto = require('../models/Voto');
 
 async function toggle(req, res) {
-  const { userId } = req.body;
+  const userId = req.user.id;
   const reporteId = req.params.id;
   try {
     const yaVoto = await Voto.exists(reporteId, userId);

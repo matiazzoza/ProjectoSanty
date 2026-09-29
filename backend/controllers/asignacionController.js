@@ -4,7 +4,7 @@ const pool = require('../db');
 const Asignacion = require('../models/Asignacion');
 const Notificacion = require('../models/Notificacion');
 const HistorialEstado = require('../models/HistorialEstado');
-const { getReporteTitulo, getUserNombre, getAdminIds, getAdminYSuperadminIds, validarLider } = require('../utils/dbHelpers');
+const { getReporteTitulo, getUserNombre, getAdminIds, getAdminYSuperadminIds, validarLider, validarAsignacionActiva } = require('../utils/dbHelpers');
 
 // Admin: obtener todos los empleados
 async function getEmpleados(req, res) {
@@ -57,6 +57,9 @@ async function editarEmpleado(req, res) {
   const { name, username, password, avatar } = req.body;
   if (!name || !username) return res.status(400).json({ error: 'Nombre y usuario son obligatorios.' });
   try {
+    const [esEmpleado] = await pool.query("SELECT id FROM usuarios WHERE id = ? AND rol = 'empleado'", [id]);
+    if (!esEmpleado[0]) return res.status(404).json({ error: 'Empleado no encontrado.' });
+
     const [existe] = await pool.query('SELECT id FROM usuarios WHERE nombre_usuario = ? AND id != ?', [username, id]);
     if (existe.length > 0) return res.status(409).json({ error: 'El nombre de usuario ya está en uso.' });
 
@@ -135,7 +138,7 @@ async function getPerfilEmpleado(req, res) {
 async function toggleEmpleado(req, res) {
   const { id } = req.params;
   try {
-    const [rows] = await pool.query('SELECT activo FROM usuarios WHERE id = ?', [id]);
+    const [rows] = await pool.query("SELECT activo FROM usuarios WHERE id = ? AND rol = 'empleado'", [id]);
     if (!rows[0]) return res.status(404).json({ error: 'Empleado no encontrado.' });
     const nuevoEstado = rows[0].activo ? 0 : 1;
     await pool.query('UPDATE usuarios SET activo = ? WHERE id = ?', [nuevoEstado, id]);
@@ -147,8 +150,16 @@ async function toggleEmpleado(req, res) {
 
 // Admin: asignar empleado (líder) + equipo opcional a reporte
 async function asignar(req, res) {
-  const { reporteId, empleadoId, prioridad = 'media', fechaLimite = null, miembros = [] } = req.body;
+  const { reporteId, empleadoId, prioridad = 'media', fechaLimite = null, miembros = [], justificacion = null } = req.body;
   try {
+    // Leer el reporte primero: si el verificador lo desmintió, exigir justificación ANTES de escribir nada
+    const actual = await pool.query('SELECT estado, titulo, verificacion_resultado, verificador_id FROM reportes WHERE id = ?', [reporteId]);
+    const reporte = actual[0][0];
+    if (!reporte) return res.status(404).json({ error: 'Reporte no encontrado.' });
+
+    if (reporte.verificacion_resultado === 'desmiente' && (!justificacion || !justificacion.trim()))
+      return res.status(400).json({ error: 'Este reporte fue desmentido por el verificador; debés justificar por qué lo asignás de todas formas.' });
+
     // Quitar asignaciones previas
     await Asignacion.removeByReporte(reporteId);
 
@@ -164,9 +175,6 @@ async function asignar(req, res) {
     );
 
     // Cambiar estado interno a 'asignado', estado público a 'en_proceso'
-    const actual = await pool.query('SELECT estado, titulo FROM reportes WHERE id = ?', [reporteId]);
-    const reporte = actual[0][0];
-
     await pool.query(
       "UPDATE reportes SET estado = 'en_proceso', estado_interno = 'asignado', actualizado_en = NOW() WHERE id = ?",
       [reporteId]
@@ -174,6 +182,14 @@ async function asignar(req, res) {
 
     // Historial
     await HistorialEstado.create(randomUUID(), reporteId, reporte.estado, 'en_proceso', req.user.id);
+
+    // Si se asigna a pesar de un resultado "desmiente", avisarle al verificador con la justificación
+    if (reporte.verificacion_resultado === 'desmiente' && reporte.verificador_id) {
+      await Notificacion.create(randomUUID(), reporte.verificador_id,
+        `ℹ️ El admin decidió asignar el reporte "${reporte.titulo}" a pesar de que lo habías desmentido. Justificación: ${justificacion}`,
+        `/reporte/${reporteId}`
+      );
+    }
 
     // Notificar al líder
     await Notificacion.create(randomUUID(), empleadoId,
@@ -446,6 +462,9 @@ async function proponerCierre(req, res) {
 
     const titulo = await getReporteTitulo(reporteId);
     if (!titulo) return res.status(404).json({ error: 'Reporte no encontrado.' });
+
+    const asignado = await validarAsignacionActiva(reporteId, req.user.id);
+    if (!asignado) return res.status(403).json({ error: 'No estás asignado activamente a este reporte.' });
 
     await pool.query(
       "UPDATE reportes SET estado_interno = 'pendiente_validacion', foto_resolucion = ?, actualizado_en = NOW() WHERE id = ?",

@@ -59,6 +59,8 @@ async function verificarEmail(req, res) {
 
 async function updateProfile(req, res) {
   const { name, avatar } = req.body;
+  if (req.user.id !== req.params.id)
+    return res.status(403).json({ error: 'Solo podés editar tu propio perfil.' });
   try {
     const user = await Usuario.update(req.params.id, { name, avatar });
     res.json(user);

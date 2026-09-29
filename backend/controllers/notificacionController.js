@@ -1,6 +1,8 @@
 const Notificacion = require('../models/Notificacion');
 
 async function getAll(req, res) {
+  if (req.params.userId !== req.user.id)
+    return res.status(403).json({ error: 'No podés ver las notificaciones de otro usuario.' });
   try {
     const notifs = await Notificacion.getByUsuario(req.params.userId);
     res.json(notifs);
@@ -11,7 +13,7 @@ async function getAll(req, res) {
 
 async function marcarLeida(req, res) {
   try {
-    await Notificacion.marcarLeida(req.params.id);
+    await Notificacion.marcarLeida(req.params.id, req.user.id);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

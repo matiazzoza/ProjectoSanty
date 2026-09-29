@@ -16,8 +16,13 @@ async function create(id, reporteId, autorId, texto, esOficial = false) {
   return rows[0];
 }
 
+async function getById(id) {
+  const [rows] = await pool.query('SELECT id, reporte_id, autor_id AS authorId FROM comentarios WHERE id = ?', [id]);
+  return rows[0] || null;
+}
+
 async function remove(id, reporteId) {
   await pool.query('DELETE FROM comentarios WHERE id = ? AND reporte_id = ?', [id, reporteId]);
 }
 
-module.exports = { create, remove };
+module.exports = { create, remove, getById };

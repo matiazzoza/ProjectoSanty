@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
@@ -14,9 +14,24 @@ const superAdminRoutes = require('./routes/superAdmin');
 const mensajesAdminRoutes = require('./routes/mensajesAdmin');
 const abandonoJob = require('./jobs/abandonoJob');
 const vencimientoJob = require('./jobs/vencimientoJob');
+const verificacionJob = require('./jobs/verificacionJob');
+
+// Orígenes permitidos: localhost/127.0.0.1 en cualquier puerto (dev web), la IP LAN de esta
+// máquina (por si se abre la web desde otro dispositivo), y lo que se sume por env en producción.
+const ALLOWED_ORIGIN_PATTERNS = [/^https?:\/\/localhost(:\d+)?$/, /^https?:\/\/127\.0\.0\.1(:\d+)?$/, /^https?:\/\/192\.168\.\d{1,3}\.\d{1,3}(:\d+)?$/];
+const EXTRA_ORIGINS = (process.env.FRONTEND_URL || '').split(',').map((o) => o.trim()).filter(Boolean);
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin(origin, callback) {
+    // Sin header Origin (apps móviles, curl, Postman) no aplica CORS: se deja pasar.
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGIN_PATTERNS.some((re) => re.test(origin)) || EXTRA_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(null, false);
+  },
+}));
 app.use(express.json({ limit: '10mb' }));
 
 // ─── Rutas ────────────────────────────────────────────────────────────────────
@@ -35,6 +50,7 @@ app.use('/api/mensajes-admin', mensajesAdminRoutes);
 // ─── Jobs ─────────────────────────────────────────────────────────────────────
 abandonoJob.iniciar();
 vencimientoJob.iniciar();
+verificacionJob.iniciar();
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 const PORT = 3001;

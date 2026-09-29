@@ -18,8 +18,8 @@ export const getPerfilEmpleado = (id) =>
 export const getPerfilEmpleadoCompleto = (id) =>
   request(`/asignaciones/empleados/${id}/perfil-completo`);
 
-export const asignar = (reporteId, empleadoId, prioridad = 'media', fechaLimite = null, miembros = []) =>
-  request('/asignaciones/asignar', { method: 'POST', body: JSON.stringify({ reporteId, empleadoId, prioridad, fechaLimite, miembros }) });
+export const asignar = (reporteId, empleadoId, prioridad = 'media', fechaLimite = null, miembros = [], justificacion = null) =>
+  request('/asignaciones/asignar', { method: 'POST', body: JSON.stringify({ reporteId, empleadoId, prioridad, fechaLimite, miembros, justificacion }) });
 
 export const getMiPerfilEmpleado = () => request('/asignaciones/mi-perfil-empleado');
 

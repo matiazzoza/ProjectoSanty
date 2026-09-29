@@ -41,12 +41,25 @@ async function update(req, res) {
   if (contienePalabraProhibida(title) || contienePalabraProhibida(description))
     return res.status(400).json({ error: 'Tu reporte contiene lenguaje inapropiado.' });
   try {
-    // Si no es admin y quiere editar datos del reporte (no solo estado), validar que esté pendiente
+    // Si no es admin y quiere editar datos del reporte (no solo estado), validar que sea el autor y que esté pendiente
     if (!status && req.user.role !== 'admin') {
       const actual = await Reporte.getById(req.params.id);
+      if (actual && actual.authorId !== req.user.id) {
+        return res.status(403).json({ error: 'Solo podés editar tus propios reportes.' });
+      }
       if (actual && actual.status !== 'pendiente') {
         return res.status(403).json({ error: 'Solo se puede editar un reporte pendiente.' });
       }
+    }
+
+    // Cambiar el estado del reporte requiere ser admin/superadmin. Los estados que tienen su propio
+    // flujo controlado (verificación, cancelación, asignación, validación de cierre) no se pueden
+    // setear directo por acá: solo "duplicado", que no tiene una acción dedicada propia.
+    if (status) {
+      if (req.user.role !== 'admin' && req.user.role !== 'superadmin')
+        return res.status(403).json({ error: 'No tenés permiso para cambiar el estado de este reporte.' });
+      if (status !== 'duplicado')
+        return res.status(400).json({ error: 'Ese estado se cambia desde su acción correspondiente (verificación, cancelación, asignación o validación de cierre).' });
     }
 
     // Guardar estado anterior antes de actualizar
@@ -104,9 +117,12 @@ async function remove(req, res) {
     const reporte = await Reporte.getById(req.params.id);
     if (!reporte) return res.status(404).json({ error: 'Reporte no encontrado.' });
 
-    // Solo el admin puede eliminar reportes que no están pendientes
-    if (req.user.role !== 'admin' && reporte.status !== 'pendiente') {
-      return res.status(403).json({ error: 'Solo se puede eliminar un reporte pendiente.' });
+    // Solo el admin puede eliminar reportes que no están pendientes o que no son propios
+    if (req.user.role !== 'admin') {
+      if (reporte.authorId !== req.user.id)
+        return res.status(403).json({ error: 'Solo podés eliminar tus propios reportes.' });
+      if (reporte.status !== 'pendiente')
+        return res.status(403).json({ error: 'Solo se puede eliminar un reporte pendiente.' });
     }
 
     await Reporte.remove(req.params.id);
@@ -125,7 +141,7 @@ const MOTIVOS_VALIDOS = [
 ];
 
 async function cancelarReporte(req, res) {
-  const { motivo } = req.body;
+  const { motivo, justificacion } = req.body;
   if (!motivo || !MOTIVOS_VALIDOS.includes(motivo))
     return res.status(400).json({ error: 'Motivo de cancelación inválido.' });
 
@@ -135,7 +151,11 @@ async function cancelarReporte(req, res) {
     if (reporte.status === 'cancelado' || reporte.status === 'resuelto')
       return res.status(400).json({ error: 'El reporte ya está finalizado.' });
 
-    await Reporte.cancelar(req.params.id, motivo);
+    // El verificador ya confirmó el problema en terreno: cancelarlo igual exige justificar por qué.
+    if (reporte.verificacionResultado === 'confirma' && (!justificacion || !justificacion.trim()))
+      return res.status(400).json({ error: 'Este reporte fue confirmado por un verificador en terreno; debés justificar por qué se cancela de todas formas.' });
+
+    await Reporte.cancelar(req.params.id, motivo, justificacion ?? null);
     await HistorialEstado.create(randomUUID(), req.params.id, reporte.status, 'cancelado', req.user.id);
 
     const MOTIVOS = {
@@ -146,9 +166,10 @@ async function cancelarReporte(req, res) {
       duplicado:           'Reporte duplicado',
     };
     const etiqueta = MOTIVOS[motivo];
+    const extra = justificacion ? ` Justificación: ${justificacion}` : '';
 
     await Notificacion.create(randomUUID(), reporte.authorId,
-      `❌ Tu reporte "${reporte.title}" fue cancelado. Motivo: ${etiqueta}.`,
+      `❌ Tu reporte "${reporte.title}" fue cancelado. Motivo: ${etiqueta}.${extra}`,
       `/reporte/${req.params.id}`
     );
 

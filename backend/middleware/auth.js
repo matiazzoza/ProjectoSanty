@@ -1,6 +1,9 @@
 const jwt = require('jsonwebtoken');
 
-const SECRET = 'reportamuni_secret_key_2026';
+const SECRET = process.env.JWT_SECRET;
+if (!SECRET) {
+  throw new Error('Falta JWT_SECRET en el archivo .env. Revisá backend/.env.example.');
+}
 
 function authMiddleware(req, res, next) {
   const header = req.headers.authorization;
